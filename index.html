@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ebook QIYAM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Nunito', sans-serif;
+            line-height: 1.6;
+            background: #F2F5FA;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+        }
+        
+        .content-wrapper {
+            padding: 40px 50px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 25px;
+            }
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .section {
+                margin-bottom: 20px;
+            }
+        }
+        
+        .text-content {
+            margin-bottom: 20px;
+        }
+        
+        .center-text {
+            text-align: center;
+        }
+        
+        .image-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cta-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 16px 35px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            border: none;
+            line-height: 1.2;
+            background-color: #ffa200;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(255, 162, 0, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 162, 0, 0.4);
+            background-color: #ff9900;
+        }
+        
+        .highlight-box {
+            margin-bottom: 25px;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid #ffa200;
+        }
+        
+        @media (max-width: 768px) {
+            .highlight-box {
+                padding: 20px;
+            }
+        }
+        
+        .title-h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 15px;
+            line-height: 1.3;
+            color: #222;
+        }
+        
+        .title-h2 {
+            font-size: 26px;
+            font-weight: 700;
+            margin: 0 0 15px;
+            line-height: 1.3;
+            color: #222;
+        }
+        
+        .title-h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 12px;
+            line-height: 1.3;
+            color: #222;
+        }
+        
+        .paragraph {
+            font-size: 17px;
+            margin: 0 0 15px;
+            line-height: 1.6;
+            color: #444;
+        }
+        
+        .justify-text {
+            text-align: justify;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .divider-line {
+            border: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ffa200, transparent);
+            margin: 10px auto;
+            width: 80%;
+        }
+        
+        .list {
+            margin: 15px 0 20px 20px;
+        }
+        
+        .list li {
+            margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .price-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 25px;
+            background: linear-gradient(135deg, #fdf6e3 0%, #faf3e0 100%);
+            border-radius: 12px;
+            border: 2px solid #ffa200;
+        }
+        
+        .old-price {
+            font-size: 20px;
+            color: #888;
+            text-decoration: line-through;
+            margin-bottom: 5px;
+        }
+        
+        .new-price {
+            font-size: 36px;
+            font-weight: 800;
+            color: #e74c3c;
+            margin: 10px 0;
+        }
+        
+        .price-note {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .testimonial-container {
+            margin: 20px 0;
+        }
+        
+        .benefit-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #27ae60;
+        }
+        
+        .benefit-icon {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background: #27ae60;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .quote {
+            font-style: italic;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+            font-size: 16px;
+            color: #555;
+        }
+        
+        .guarantee {
+            text-align: center;
+            padding: 15px;
+            background: #e8f6f3;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content-wrapper">
+            <!-- Header Section -->
+            <div class="section center-text">
+                <h1 class="title-h1">Udah Niat Tahajud… <br>Tapi Tetap Kebangun Pas Udah Subuh?</h1>
+                <p class="paragraph">Masalahnya bukan malas. <strong>Tubuhmu memang belum disiapin untuk bangun malam.</strong> Dan itu bisa diperbaiki.</p>
+                
+                <div class="highlight-box">
+                    <p class="paragraph"><span class="benefit-icon">✓</span> Bangun lebih ringan &amp; nggak "nempel kasur"</p>
+                    <p class="paragraph"><span class="benefit-icon">✓</span> Badan lebih segar untuk doa &amp; ibadah malam</p>
+                    <p class="paragraph"><span class="benefit-icon">✓</span> Nggak perlu alarm berlapis yang cuma bikin stres</p>
+                </div>
+            </div>
+            
+            <!-- First CTA -->
+            <div class="cta-container">
+                <a href="http://lynk.id/redigital/l044xo020p31/checkout" class="cta-button" target="_blank">Saya Mau Mulai Bangun Malam</a>
+            </div>
+            
+            <!-- Problem Section -->
+            <div class="section">
+                <h2 class="title-h2">Gini kan?</h2>
+                <ul class="list">
+                    <li>Udah pasang alarm banyak, tapi <span style="color: #e74c3c; font-weight: 600;">tetep kelewatan.</span></li>
+                    <li><span style="color: #e74c3c; font-weight: 600;">Bangun mepet subuh</span>, nggak sempat doa apa-apa.</li>
+                    <li>Badan berat kayak disemen.</li>
+                    <li>Akhirnya nyalahin diri sendiri berulang-ulang.</li>
+                </ul>
+                <p class="paragraph">Dan yang lebih nyesek?</p>
+                <p class="paragraph"><strong>Tau Allah turun di akhir malam… tapi nggak pernah hadir.</strong></p>
+            </div>
+            
+            <div class="divider">
+                <hr class="divider-line">
+            </div>
+            
+            <!-- Solution Section -->
+            <div class="section">
+                <p class="paragraph">Bangun malam itu bukan soal niat doang.</p>
+                <p class="paragraph"><strong>Kalau tubuh salah persiapan, otak otomatis nolak bangun.</strong></p>
+                <p class="paragraph">Makanya kerasa kayak perang setiap kali pengen mulai tahajud.</p>
+                <p class="paragraph">Solusinya simpel:</p>
+                <p class="paragraph"><strong>Perbaiki caranya tidur — bukan tambah motivasi.</strong></p>
+            </div>
+            
+            <div class="divider">
+                <hr class="divider-line">
+            </div>
+            
+            <!-- Ebook QIYAM Section -->
+            <div class="section">
+                <h2 class="title-h2">📘 Ebook QIYAM</h2>
+                <p class="paragraph"><strong>Panduan praktis buat bantu mulai bangun malam dengan ringan</strong>, tanpa drama, tanpa alarm berlapis.</p>
+                <p class="paragraph">Bukan teori. <strong>Metode ini udah dipraktikkan langsung</strong> dan hasilnya nyata.</p>
+            </div>
+            
+            <!-- Cover Image -->
+            <div class="image-container">
+                <img src="COVER QIYAM (1).png" alt="Cover Ebook QIYAM">
+            </div>
+            
+            <!-- Content Section -->
+            <div class="section center-text">
+                <h3 class="title-h3"><strong>Materi yang Akan Kamu Dapatkan:</strong></h3>
+                
+                <div class="benefit-item">
+                    <p class="paragraph"><strong>Rutinitas sebelum tidur</strong> yang bikin bangun lebih mudah</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <p class="paragraph"><strong>Cara Rasulullah tidur</strong> biar tubuh cepat pulih</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <p class="paragraph"><strong>Waktu maksimal</strong> yang masih boleh melek</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <p class="paragraph"><strong>Kenapa dosa bikin bangun berat</strong> dan gimana nutup "pintunya"</p>
+                </div>
+                
+                <div class="benefit-item">
+                    <p class="paragraph"><strong>Doa &amp; zikir sederhana</strong> yang bantu tenang sebelum tidur</p>
+                </div>
+                
+                <p class="paragraph" style="margin-top: 25px;"><strong>Tujuan akhirnya simpel:</strong></p>
+                <p class="paragraph" style="font-size: 18px; color: #27ae60; font-weight: 600;">Bisa hadir di waktu terbaik Allah mencari doa hamba-Nya.</p>
+            </div>
+            
+            <div class="divider">
+                <hr class="divider-line">
+            </div>
+            
+            <!-- Testimonials -->
+            <div class="section center-text">
+                <h3 class="title-h3"><strong>Kata yang udah nyoba:</strong></h3>
+            </div>
+            
+            <div class="testimonial-container">
+                <div class="image-container">
+                    <img loading="lazy" src="https://app.galeridigital.my.id/upjpg/uploads/grup_4/68c90198dc5fd_1758003608.webp" alt="Testimoni 1">
+                </div>
+                
+                <div class="image-container">
+                    <img loading="lazy" src="https://app.galeridigital.my.id/upjpg/uploads/grup_4/68c90198bad65_1758003608.webp" alt="Testimoni 2">
+                </div>
+                
+                <div class="image-container">
+                    <img loading="lazy" src="https://app.galeridigital.my.id/upjpg/uploads/grup_4/68c90198b9444_1758003608.webp" alt="Testimoni 3">
+                </div>
+                
+                <div class="image-container">
+                    <img loading="lazy" src="https://app.galeridigital.my.id/upjpg/uploads/grup_4/68da9cb603efb_1759157430.jpeg" alt="Testimoni 4">
+                </div>
+                
+                <div class="image-container">
+                    <img loading="lazy" src="https://app.galeridigital.my.id/upjpg/uploads/grup_4/6900dfa5a8220_1761664933.webp" alt="Testimoni 5">
+                </div>
+            </div>
+            
+            <!-- Second CTA -->
+            <div class="cta-container">
+                <a href="http://lynk.id/redigital/l044xo020p31/checkout" class="cta-button" target="_blank">Saya Mau Ikut Coba</a>
+            </div>
+            
+            <!-- Price Section -->
+            <div class="price-container">
+                <p class="old-price">Harga Normal: Rp 126.000</p>
+                <h2 class="new-price">Rp 59.000</h2>
+                <p class="price-note">Harga spesial untuk pembelian hari ini</p>
+                <p class="paragraph" style="margin-top: 15px;"><strong>Hanya seharga nongkrong dicafe.</strong></p>
+                <p class="paragraph">Tapi dampaknya? <strong style="color: #e74c3c;">Waktu terbaik buat mendekat ke Allah.</strong></p>
+            </div>
+            
+            <!-- Third CTA -->
+            <div class="cta-container">
+                <a href="http://lynk.id/redigital/l044xo020p31/checkout" class="cta-button" style="font-size: 22px; padding: 18px 40px;" target="_blank">Dapatkan Ebook QIYAM Sekarang</a>
+            </div>
+            
+            <!-- Limited Offer -->
+            <div class="section">
+                <div class="guarantee">
+                    ⚠️ PROMO TERBATAS - Harga akan kembali normal setelah kuota habis!
+                </div>
+                
+                <p class="paragraph">Promo 59 ribu ini <strong>dibuka untuk jumlah pengguna terbatas.</strong></p>
+                <p class="paragraph">Begitu kuota habis, harga kembali normal.</p>
+                <p class="paragraph">Kalau lo punya hajat besar, <strong>jangan keseringan telat hadir di waktu Allah paling dekat.</strong></p>
+            </div>
+            
+            <div class="divider">
+                <hr class="divider-line">
+            </div>
+            
+            <!-- Closing Section -->
+            <div class="section">
+                <p class="paragraph">Tidur yang benar bisa jadi awal hidup yang berubah.</p>
+                <p class="paragraph">Dan malam yang tenang…</p>
+                <p class="paragraph">bisa jadi waktu terbaik buat kembali pada-Nya.</p>
+                
+                <div class="quote">
+                    <p>"Siapa yang berdoa kepada-Ku, maka Aku kabulkan."</p>
+                    <p style="text-align: right; margin-top: 10px;">(HR. Bukhari & Muslim)</p>
+                </div>
+            </div>
+            
+            <!-- Final CTA -->
+            <div class="cta-container">
+                <a href="http://lynk.id/redigital/l044xo020p31/checkout" class="cta-button" target="_blank">Mulai Perjalanan Tahajudmu Sekarang</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Facebook Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s){
+            if(f.fbq)return;n=f.fbq=function(){
+                n.callMethod? n.callMethod.apply(n,arguments):n.queue.push(arguments)
+            };
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)
+        }(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        
+        fbq('init', '300555229246452');
+        fbq('track', 'ViewContent');
+    </script>
+    
+    <noscript>
+        <img height="1" width="1" style="display:none" 
+             src="https://www.facebook.com/tr?id=300555229246452&ev=ViewContent&noscript=1"/>
+    </noscript>
+    
+    <!-- Facebook Conversion API -->
+    <script>
+        window.addEventListener("load", function() {
+            const eventData = {
+                event: "ViewContent",
+                page_title: "Ebook QIYAM",
+                page_slug: "lpqiyam_1"
+            };
+            
+            fetch("https://graph.facebook.com/v23.0/300555229246452/events", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer EAAbMeh2kn5UBOwcqununbEeX6JERySFx678nxdo4HhEQZBkwzCdLRsIC6u92CSyoZCZBFKtyeplXoudu6IDqeLeFFN1zeqWM5LTD9shuWslsn4tJYCtDOyQugpIQ2sjjSXZAnPFMTGzpZAqWOIxLN7xq1FT7qblOuyXl9bRZCWdxzouRjTTLwpykzSEXxZCADlZAGgZDZD"
+                },
+                body: JSON.stringify(eventData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error("CAPI ViewContent event failed:", response.status, response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error("CAPI ViewContent event error:", error);
+            });
+        });
+    </script>
+</body>
+</html>
