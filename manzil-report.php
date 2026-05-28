@@ -186,58 +186,91 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nilai · <?= htmlspecialchars($nama_peserta ?: 'Murojaah') ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
+        /* Apple-inspired Design System Variables */
+        :root {
+            /* Colors from DESIGN.md */
+            --colors-primary: #0066cc; /* Action Blue */
+            --colors-primary-focus: #0071e3;
+            --colors-primary-on-dark: #2997ff;
+            --colors-canvas: #ffffff; /* Pure White */
+            --colors-canvas-parchment: #f5f5f7; /* Parchment */
+            --colors-surface-pearl: #fafafc; /* Pearl Button */
+            --colors-ink: #1d1d1f; /* Near-Black Ink */
+            --colors-ink-muted-80: #333333;
+            --colors-ink-muted-48: #7a7a7a;
+            --colors-hairline: #e0e0e0;
+
+            /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+            --badge-success-bg: #dcfce7; /* Light Green */
+            --badge-success-text: #166534; /* Dark Green */
+            --badge-danger-bg: #fee2e2; /* Light Red */
+            --badge-danger-text: #991b1b; /* Dark Red */
+            --badge-warning-bg: #fef3c7; /* Light Yellow */
+            --badge-warning-text: #92400e; /* Dark Yellow */
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #faf8f5;
-            color: #4a4a4a;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--colors-canvas-parchment);
+            color: var(--colors-ink);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.47; /* typography.body line-height */
         }
         
-        .flat-card {
-            background-color: #ffffff;
-            border: 1px solid #eae2d7;
+        .apple-card {
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            border-radius: 18px; /* rounded.lg */
+            box-shadow: 0 1px 0 var(--colors-divider-soft);
         }
         
-        .flat-select {
-            border: 1px solid #e2dcd5;
-            background-color: #ffffff;
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
+        .apple-select {
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            padding: 0.6rem 0.8rem; /* typography.caption */
+            font-size: 0.875rem; /* typography.caption */
+            border-radius: 8px; /* rounded.sm */
+            color: var(--colors-ink);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .flat-select:focus {
-            border-color: #b7aa99;
+        .apple-select:focus {
+            border-color: var(--colors-primary);
             outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2); /* Focus Blue effect */
         }
         
         .badge-lancar {
-            background-color: #ecf3f0;
-            border: 1px solid #d1e0db;
-            color: #3f6a5c;
+            background-color: var(--badge-success-bg);
+            border: 1px solid var(--badge-success-bg); /* Use same color for border */
+            color: var(--badge-success-text);
         }
         
         .badge-cukup {
-            background-color: #f9f3e9;
-            border: 1px solid #ece1d2;
-            color: #8a7a5c;
+            background-color: var(--badge-warning-bg);
+            border: 1px solid var(--badge-warning-bg);
+            color: var(--badge-warning-text);
         }
         
         .badge-tidak {
-            background-color: #f8edec;
-            border: 1px solid #eddbda;
-            color: #8f5e5e;
+            background-color: var(--badge-danger-bg);
+            border: 1px solid var(--badge-danger-bg);
+            color: var(--badge-danger-text);
         }
         
         .kualitas-badge {
             display: inline-flex;
             align-items: center;
-            padding: 0.375rem 1rem;
-            font-size: 0.875rem;
-            font-weight: 500;
+            padding: 0.45rem 1.1rem; /* status-badge padding */
+            font-size: 0.875rem; /* typography.caption */
+            font-weight: 600; /* typography.caption-strong */
             border-width: 1px;
+            border-radius: 9999px; /* rounded.pill */
         }
 
         .rotate-180 {
@@ -252,28 +285,32 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
 <body class="p-4 md:p-6">
     <div class="max-w-6xl mx-auto">
         
-        <!-- Header -->
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div class="flex items-center gap-3">
-                <div class="h-6 w-px bg-[#e2dcd5] mx-1"></div>
-                <div>
-                    <h1 class="text-2xl font-light tracking-wide text-[#5d6e6f]">Nilai Muroja'ah</h1>
-                    <p class="text-xs text-[#9aa6a7] mt-0.5">kualitas muroja'ah · <?= $bulan_list[$bulan-1] ?> <?= $tahun ?></p>
+        <!-- Header - Adapted to Apple's style -->
+        <div class="apple-card p-5 mb-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">NILAI MUROJA'AH</h1>
+                        <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">KUALITAS MUROJA'AH · <?= $bulan_list[$bulan-1] ?> <?= $tahun ?></p>
+                    </div>
                 </div>
-            </div>
-            <div class="text-right">
-                <p class="text-sm font-medium text-[#7c8c8d]"><?= htmlspecialchars($nama_peserta) ?: 'Pilih Nama' ?></p>
-                <p class="text-xs text-[#a5b1b2]"><?= date('d M Y') ?></p>
+                <div class="text-left sm:text-right">
+                    <p class="text-sm font-medium text-gray-700">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
+                    <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
+                </div>
             </div>
         </div>
 
         <!-- Filter Section -->
-        <div class="flat-card p-5 mb-7">
+        <div class="apple-card p-5 mb-7">
             <form method="GET" action="">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div class="md:col-span-2">
-                        <label class="block text-xs text-[#7c8c8d] mb-1.5 tracking-wide">Nama</label>
-                        <select name="peserta_id" class="w-full flat-select text-sm" onchange="this.form.submit()">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1 tracking-wide">NAMA SANTRI</label>
+                        <select name="peserta_id" class="w-full apple-select text-sm" onchange="this.form.submit()">
                             <option value="">-- Pilih Nama --</option>
                             <?php foreach ($peserta_list as $peserta): ?>
                             <option value="<?= $peserta['id'] ?>" <?= $peserta_id == $peserta['id'] ? 'selected' : '' ?>>
@@ -283,8 +320,8 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs text-[#7c8c8d] mb-1.5 tracking-wide">BULAN</label>
-                        <select name="bulan" class="w-full flat-select text-sm" onchange="this.form.submit()">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1 tracking-wide">BULAN</label>
+                        <select name="bulan" class="w-full apple-select text-sm" onchange="this.form.submit()">
                             <?php for ($i = 1; $i <= 12; $i++): ?>
                             <option value="<?= $i ?>" <?= $bulan == $i ? 'selected' : '' ?>>
                                 <?= $bulan_list[$i-1] ?>
@@ -293,8 +330,8 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs text-[#7c8c8d] mb-1.5 tracking-wide">TAHUN</label>
-                        <select name="tahun" class="w-full flat-select text-sm" onchange="this.form.submit()">
+                        <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1 tracking-wide">TAHUN</label>
+                        <select name="tahun" class="w-full apple-select text-sm" onchange="this.form.submit()">
                             <?php for ($y = date('Y'); $y >= date('Y') - 2; $y--): ?>
                             <option value="<?= $y ?>" <?= $tahun == $y ? 'selected' : '' ?>>
                                 <?= $y ?>
@@ -309,12 +346,12 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
         <?php if ($peserta_id > 0): ?>
         
         <!-- KUALITAS BULANAN -->
-        <div class="flat-card p-6 mb-7">
+        <div class="apple-card p-6 mb-7">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between">
                 <div>
-                    <span class="text-xs text-[#8a9a9b] tracking-wide uppercase">Kualitas Bulanan</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kualitas Bulan Ini</span>
                     <div class="flex items-center gap-4 mt-2">
-                        <span class="text-3xl font-light text-[#5d6e6f]"><?= $kualitas_bulan ?></span>
+                        <span class="text-3xl font-bold text-gray-800"><?= $kualitas_bulan ?></span>
                         <span class="kualitas-badge <?= $badge_color ?> rounded">
                             <i class="fas fa-<?= $kualitas_bulan === 'Lancar' ? 'check' : ($kualitas_bulan === 'Cukup Lancar' ? 'minus' : 'xmark') ?> mr-2"></i>
                             <?= $bulan_list[$bulan-1] ?> <?= $tahun ?>
@@ -325,20 +362,20 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
         </div>
 
         <!-- PERBANDINGAN PER MINGGU -->
-        <div class="flat-card p-6 mb-7">
-            <div class="flex items-center gap-2 mb-5">
-                <i class="fas fa-chart-simple text-[#9aa6a7] text-sm"></i>
-                <span class="text-sm font-medium text-[#6a787a] tracking-wide">PERBANDINGAN PER MINGGU</span>
+        <div class="apple-card p-6 mb-7">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-chart-simple text-gray-500 text-sm"></i>
+                <span class="text-sm font-medium text-gray-700 tracking-wide">PERBANDINGAN PER MINGGU</span>
             </div>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
-                        <tr class="border-b border-[#ece7e1]">
-                            <th class="px-4 py-3 text-left text-xs font-medium text-[#6e7a7a] uppercase tracking-wider">Pekan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-[#6e7a7a] uppercase tracking-wider">Tanggal</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-[#6e7a7a] uppercase tracking-wider">Total Juz</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-[#6e7a7a] uppercase tracking-wider">Kualitas</th>
+                        <tr class="border-b border-gray-200">
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pekan</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Total Juz</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Kualitas</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -354,24 +391,24 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                             }
                             $minggu_ditampilkan++;
                             
-                            $kualitas = $data['kualitas'];
+                            $kualitas_status = $data['kualitas'];
                             $badge_class = '';
                             $icon_class = '';
-                            if ($kualitas === 'Lancar') {
+                            if ($kualitas_status === 'Lancar') {
                                 $badge_class = 'badge-lancar';
                                 $icon_class = 'check';
-                            } elseif ($kualitas === 'Cukup Lancar') {
+                            } elseif ($kualitas_status === 'Cukup Lancar') {
                                 $badge_class = 'badge-cukup';
                                 $icon_class = 'minus';
-                            } elseif ($kualitas === 'Tidak Lancar') {
+                            } elseif ($kualitas_status === 'Tidak Lancar') {
                                 $badge_class = 'badge-tidak';
                                 $icon_class = 'xmark';
                             } else {
-                                $badge_class = 'bg-[#f5f2ee] text-[#6e7a7a] border border-[#e2dcd5]';
+                                $badge_class = 'bg-gray-100 text-gray-500 border border-gray-200';
                                 $icon_class = 'circle';
                             }
                         ?>
-                        <tr class="border-b border-[#f0ebe5] hover:bg-[#fcfbf9]">
+                        <tr class="border-b border-gray-100 hover:bg-gray-50/50">
                             <td class="px-4 py-4 text-[#5d6e6f] font-medium">Pekan <?= $minggu_index ?></td>
                             <td class="px-4 py-4 text-[#7c8c8d] text-xs">
                                 <?= date('d M', strtotime($tanggal_awal)) ?> - <?= date('d M', strtotime($tanggal_awal . ' +6 days')) ?>
@@ -382,12 +419,12 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                             </td>
                             <td class="px-4 py-4 text-center">
                                 <?php if ($data['total_juz'] > 0): ?>
-                                <span class="inline-flex items-center px-3 py-1.5 text-xs border <?= $badge_class ?> rounded">
+                                <span class="kualitas-badge text-xs <?= $badge_class ?>">
                                     <i class="fas fa-<?= $icon_class ?> mr-1.5 text-[10px]"></i>
-                                    <?= $kualitas ?>
+                                    <?= $kualitas_status ?>
                                 </span>
                                 <?php else: ?>
-                                <span class="inline-flex items-center px-3 py-1.5 text-xs bg-[#f5f2ee] text-[#6e7a7a] border border-[#e2dcd5] rounded">
+                                <span class="kualitas-badge text-xs bg-gray-100 text-gray-500 border border-gray-200">
                                     <i class="fas fa-circle mr-1.5 text-[8px] text-[#b7aa99]"></i>
                                     Tidak ada data
                                 </span>
@@ -398,7 +435,7 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                         
                         <?php if ($minggu_ditampilkan == 0): ?>
                         <tr>
-                            <td colspan="4" class="px-4 py-8 text-center text-[#a5b1b2] text-sm italic">
+                            <td colspan="4" class="px-4 py-8 text-center text-gray-400 text-sm italic">
                                 Belum ada data murojaah pada bulan <?= $bulan_list[$bulan-1] ?> <?= $tahun ?>
                             </td>
                         </tr>
@@ -407,29 +444,29 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                 </table>
             </div>
             
-            <!-- Keterangan -->
-            <div class="mt-5 pt-4 border-t border-[#f0ebe5] flex flex-wrap gap-4 text-xs">
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-3 h-3 bg-[#ecf3f0] border border-[#d1e0db] rounded"></span>
-                    <span class="text-[#6e7a7a]">Lancar</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-3 h-3 bg-[#f9f3e9] border border-[#ece1d2] rounded"></span>
-                    <span class="text-[#6e7a7a]">Cukup Lancar</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-3 h-3 bg-[#f8edec] border border-[#eddbda] rounded"></span>
-                    <span class="text-[#6e7a7a]">Tidak Lancar</span>
-                </div>
+            <!-- Legend -->
+            <div class="mt-5 pt-4 border-t border-gray-200 flex flex-wrap gap-4 text-xs text-gray-500">
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-emerald-500"></i> Lancar</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-amber-500"></i> Cukup Lancar</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-red-500"></i> Tidak Lancar</span>
             </div>
         </div>
 
+        <!-- TOMBOL DESKTOP -->
+        <div class="hidden md:block mb-4 text-right">
+            <a href="laporanhan.php?bulan=<?= urlencode($bulan_list[$bulan-1]) ?>&tahun=<?= $tahun ?>" 
+               class="inline-flex items-center px-4 py-2 btn-apple-outline text-sm">
+                <i class="fas fa-file-alt mr-2"></i>
+                <span>Laporan Hafalan</span>
+            </a>
+        </div>
+
         <!-- DETAIL JUZ PER MINGGU - DROPDOWN -->
-        <div class="flat-card mb-7">
-            <div class="px-6 py-4 border-b border-[#ece7e1]">
+        <div class="apple-card mb-7">
+            <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-table-list text-[#9aa6a7] text-sm"></i>
-                    <span class="text-sm font-medium text-[#6a787a] tracking-wide">
+                    <i class="fas fa-table-list text-gray-500 text-sm"></i>
+                    <span class="text-sm font-medium text-gray-700 tracking-wide">
                         DETAIL JUZ · <?= strtoupper($bulan_list[$bulan-1]) ?> <?= $tahun ?>
                     </span>
                 </div>
@@ -450,23 +487,23 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
             ?>
             <div class="border-b border-[#f0ebe5] last:border-b-0">
                 <!-- Dropdown Header -->
-                <div class="p-4 bg-[#fcfbf9] hover:bg-[#f9f7f4] cursor-pointer transition-colors duration-150" 
+                <div class="p-4 bg-gray-50/50 hover:bg-gray-100/50 cursor-pointer transition-colors duration-150" 
                      onclick="toggleDropdown('dropdown-<?= $minggu_index ?>')">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <div class="flex items-center gap-3">
-                                <span class="text-base font-medium text-[#5d6e6f]">Pekan ke-<?= $minggu_index ?></span>
-                                <span class="text-xs text-[#a5b1b2]">
+                                <span class="text-base font-semibold text-gray-800">Pekan ke-<?= $minggu_index ?></span>
+                                <span class="text-xs text-gray-500">
                                     <?= date('d M', strtotime($tanggal_awal)) ?> - 
                                     <?= date('d M', strtotime($tanggal_awal . ' +6 days')) ?>
                                 </span>
                             </div>
-                            <span class="text-xs bg-[#e9e2d9] px-2 py-1 rounded-full text-[#6e7a7a]">
+                            <span class="text-xs bg-gray-100 px-2 py-1 rounded-full text-gray-600">
                                 <?= $total_juz_minggu ?> Juz
                             </span>
                         </div>
                         <div class="flex items-center gap-3">
-                            <?php if ($total_juz_minggu > 0): 
+                            <?php if ($total_juz_minggu > 0):
                                 $kualitas = $data['kualitas'];
                                 $icon = ($kualitas == 'Lancar') ? 'check' : (($kualitas == 'Cukup Lancar') ? 'minus' : 'xmark');
                                 $bg_color = ($kualitas == 'Lancar') ? 'bg-[#ecf3f0]' : (($kualitas == 'Cukup Lancar') ? 'bg-[#f9f3e9]' : 'bg-[#f8edec]');
@@ -474,22 +511,22 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                             <span class="w-6 h-6 <?= $bg_color ?> rounded-full flex items-center justify-center border border-[#d1e0db]">
                                 <i class="fas fa-<?= $icon ?> text-[10px] text-[#5d6e6f]"></i>
                             </span>
-                            <?php endif; ?>
-                            <i class="fas fa-chevron-down text-[#b7aa99] text-sm transition-transform duration-200" id="icon-<?= $minggu_index ?>"></i>
+                            <?php endif; ?> 
+                            <i class="fas fa-chevron-down text-gray-400 text-sm transition-transform duration-200" id="icon-<?= $minggu_index ?>"></i>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Dropdown Content -->
-                <div id="dropdown-<?= $minggu_index ?>" class="hidden p-4 pt-2 bg-white border-t border-[#ece7e1]">
+                <div id="dropdown-<?= $minggu_index ?>" class="hidden p-4 pt-2 bg-white border-t border-gray-200">
                     <?php if (!empty($detail_juz_per_minggu[$minggu_index])): ?>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
                         <?php foreach ($detail_juz_per_minggu[$minggu_index] as $juz): ?>
-                        <div class="flex items-center justify-between p-3 bg-[#fcfbf9] border border-[#ece7e1] rounded hover:border-[#d4c9bc] transition-colors">
+                        <div class="flex items-center justify-between p-3 bg-gray-50/50 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
                             <div class="flex items-center gap-2">
-                                <span class="font-mono text-[#5d6e6f] font-medium">Juz <?= $juz['juz'] ?></span>
-                                <span class="text-[#8a9a9b] text-xs">·</span>
-                                <span class="text-xs text-[#7c8c8d]"><?= $juz['frekuensi'] ?>x</span>
+                                <span class="font-mono text-gray-800 font-semibold">Juz <?= $juz['juz'] ?></span>
+                                <span class="text-gray-500 text-xs">·</span>
+                                <span class="text-xs text-gray-600"><?= $juz['frekuensi'] ?>x</span>
                             </div>
                             <span class="inline-flex items-center px-2.5 py-1 text-[10px] border rounded-full <?= $juz['badge_class'] ?>">
                                 <i class="fas fa-<?= $juz['kualitas'] == 'Lancar' ? 'check' : ($juz['kualitas'] == 'Cukup Lancar' ? 'minus' : 'xmark') ?> mr-1"></i>
@@ -499,7 +536,7 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
                         <?php endforeach; ?>
                     </div>
                     <?php else: ?>
-                    <div class="text-xs italic text-[#a5b1b2] py-4 text-center">
+                    <div class="text-xs italic text-gray-400 py-4 text-center">
                         <i class="far fa-frown mr-1"></i> Tidak ada data murojaah di pekan ini
                     </div>
                     <?php endif; ?>
@@ -508,25 +545,17 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
             <?php endforeach; ?>
             
             <?php if ($minggu_ditampilkan == 0): ?>
-            <div class="p-10 text-center text-[#a5b1b2] text-sm italic">
+            <div class="p-10 text-center text-gray-400 text-sm italic">
                 <i class="far fa-folder-open mb-2 text-2xl block"></i>
                 Belum ada data murojaah pada bulan <?= $bulan_list[$bulan-1] ?> <?= $tahun ?>
             </div>
             <?php endif; ?>
         </div>
 
-        <!-- TOMBOL DESKTOP -->
-        <div class="hidden md:block mb-4 text-right">
-            <a href="laporanhan.php?bulan=<?= urlencode($bulan_list[$bulan-1]) ?>&tahun=<?= $tahun ?>" 
-               class="inline-flex items-center px-4 py-2 bg-[#5d6e6f] hover:bg-[#4a5a5b] text-white text-sm font-medium rounded transition-colors duration-150">
-                <i class="fas fa-file-alt mr-2"></i>
-                <span>Laporan Hafalan</span>
-            </a>
-        </div>
-
         <!-- FLOATING BUTTON MOBILE - BISA DI-TOGGLE -->
         <div id="floatingButton" class="fixed bottom-6 right-6 z-50 md:hidden">
-            <div id="floatingContent" class="flex items-center bg-[#5d6e6f] hover:bg-[#4a5a5b] text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden cursor-pointer">
+            <div id="floatingContent" class="flex items-center bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 overflow-hidden cursor-pointer"
+                style="box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);">
                 <a href="laporanhan.php?bulan=<?= urlencode($bulan_list[$bulan-1]) ?>&tahun=<?= $tahun ?>" 
                    class="flex items-center gap-2 px-5 py-3 text-white no-underline w-full h-full" id="floatingLink">
                     <i class="fas fa-file-alt text-lg"></i>
@@ -537,18 +566,18 @@ $bulan_list = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', '
 
         <!-- Footer -->
         <div class="mt-10 text-center">
-            <p class="text-xs text-[#a5b1b2] tracking-wide">
+            <p class="text-xs text-gray-400 tracking-wide">
                 <i class="fas fa-circle mr-1 text-[6px] align-middle"></i>
                 Reqra by Han · <?= date('Y') ?>
             </p>
         </div>
         
         <?php else: ?>
-        <!-- Empty State -->
-        <div class="flat-card p-10 text-center">
-            <div class="text-5xl text-[#d4c9bc] mb-4">📖</div>
-            <h3 class="text-lg font-light text-[#5d6e6f] mb-2">Pilih Nama</h3>
-            <p class="text-sm text-[#8a9a9b] mb-6 max-w-md mx-auto">Silakan pilih nama untuk melihat laporan kualitas muroja'ah</p>
+        <!-- Empty State - Apple-style -->
+        <div class="apple-card p-10 text-center">
+            <div class="w-20 h-20 bg-blue-50/50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-blue-500">📖</div>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Pilih Nama Santri</h3>
+            <p class="text-gray-500 max-w-md mx-auto">Silakan pilih nama santri pada filter di atas untuk melihat laporan kualitas muroja'ah.</p>
         </div>
         <?php endif; ?>
         

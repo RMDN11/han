@@ -202,6 +202,41 @@ if ($top_value > 0) {
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Apple-inspired Design System Variables */
+:root {
+    /* Colors from DESIGN.md */
+    --colors-primary: #0066cc; /* Action Blue */
+    --colors-primary-focus: #0071e3;
+    --colors-primary-on-dark: #2997ff;
+    --colors-canvas: #ffffff; /* Pure White */
+    --colors-canvas-parchment: #f5f5f7; /* Parchment */
+    --colors-surface-pearl: #fafafc; /* Pearl Button */
+    --colors-surface-tile-1: #272729; /* Near-Black Tile 1 */
+    --colors-surface-tile-2: #2a2a2c; /* Near-Black Tile 2 */
+    --colors-surface-tile-3: #252527; /* Near-Black Tile 3 */
+    --colors-surface-black: #000000; /* Pure Black */
+    --colors-ink: #1d1d1f; /* Near-Black Ink */
+    --colors-body-on-dark: #ffffff;
+    --colors-body-muted: #cccccc;
+    --colors-ink-muted-80: #333333;
+    --colors-ink-muted-48: #7a7a7a;
+    --colors-divider-soft: rgba(0, 0, 0, 0.04);
+    --colors-hairline: #e0e0e0;
+
+    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+    --badge-success-bg: #dcfce7; /* Light Green */
+    --badge-success-text: #166534; /* Dark Green */
+    --badge-danger-bg: #fee2e2; /* Light Red */
+    --badge-danger-text: #991b1b; /* Dark Red */
+    --badge-warning-bg: #fef3c7; /* Light Yellow */
+    --badge-warning-text: #92400e; /* Dark Yellow */
+
+    /* Spacing tokens (using 8px base unit) */
+    --spacing-xs: 8px; --spacing-sm: 12px; --spacing-md: 16px; --spacing-lg: 24px;
+}
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* GLASSMORPHISM MODERN UI */
@@ -213,17 +248,19 @@ if ($top_value > 0) {
     --gold: #f59e0b;
 }
 body {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--colors-canvas-parchment); /* Parchment */
     background-attachment: fixed;
-    color: #334155;
+    color: var(--colors-ink); /* Near-Black Ink */
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.47; /* typography.body line-height */
 }
 .glass-card {
-    background: var(--glass-bg);
+    background: var(--colors-canvas); /* Pure White */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--colors-hairline); /* Hairline */
     border-radius: 1.25rem;
     box-shadow: var(--glass-shadow);
     transition: all 0.3s ease;
@@ -232,14 +269,15 @@ body {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
     border-color: rgba(255, 255, 255, 0.9);
 }
-.modern-select {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid #cbd5e1;
-    border-radius: 0.875rem;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.875rem;
+.apple-select {
+    background: var(--colors-canvas);
+    border: 1px solid var(--colors-hairline);
+    border-radius: 8px; /* rounded.sm */
+    padding: 0.6rem 0.8rem; /* typography.caption */
+    font-size: 0.875rem; /* typography.caption */
     width: 100%;
     appearance: none;
+    color: var(--colors-ink);
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
@@ -247,38 +285,40 @@ body {
 }
 .modern-select:focus {
     outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    background: #fff;
+    border-color: var(--colors-primary); /* Action Blue */
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2); /* Focus Blue effect */
+    background: var(--colors-canvas);
 }
-.btn-modern {
-    background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+.btn-apple-primary {
+    background: var(--colors-primary); /* Action Blue */
     border: none;
-    color: white;
-    padding: 0.5rem 1.2rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border-radius: 0.875rem;
+    color: var(--colors-canvas);
+    padding: 0.75rem 1.75rem; /* button-primary padding */
+    font-size: 0.875rem; /* typography.body */
+    font-weight: 500; /* Adjusted to 500 for buttons */
+    border-radius: 9999px; /* rounded.pill */
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
 }
-.btn-modern:hover {
+.btn-apple-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+}
+.btn-apple-primary:active {
+    transform: scale(0.95);
 }
 .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid #e2e8f0;
+    border-radius: 18px; /* rounded.lg */
+    background: var(--colors-canvas);
+    border: 1px solid var(--colors-hairline);
 }
 .table-header {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    color: #475569;
+    background: var(--colors-canvas-parchment);
+    color: var(--colors-ink-muted-80);
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
@@ -303,11 +343,11 @@ body {
     border: 1px solid #fcd34d;
     animation: pulse 2s infinite;
 }
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
-}
 .top-winner-card {
+    /* This card style is quite different from Apple's typical flat design.
+       Adapting it to a dark tile style from DESIGN.md. */
+    background: var(--colors-surface-tile-1); /* Near-Black Tile 1 */
+    color: var(--colors-body-on-dark);
     background: linear-gradient(135deg, #1e3c3f 0%, #2a4a4d 100%);
     border-radius: 1.25rem;
     padding: 1rem 1.5rem;
@@ -316,11 +356,11 @@ body {
     overflow: hidden;
 }
 .top-winner-card::before {
-    content: "👑";
-    position: absolute;
-    right: -15px;
-    top: -15px;
-    font-size: 80px;
+    content: ""; /* Remove crown icon as it's not in Apple's style */
+    position: absolute; /* Keep for potential subtle background pattern */
+    right: 0;
+    top: 0;
+    font-size: 0;
     opacity: 0.08;
     pointer-events: none;
 }
@@ -350,14 +390,14 @@ body {
     font-weight: 700;
     letter-spacing: 0.5px;
 }
-.winner-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #fbbf24;
+.winner-value { /* typography.display-md */
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--colors-primary-on-dark); /* Sky Link Blue for highlight on dark */
 }
 .winner-pekan {
-    background: rgba(255,255,255,0.15);
-    padding: 0.2rem 0.6rem;
+    background: rgba(255,255,255,0.1); /* Subtle background on dark tile */
+    padding: 0.2rem 0.6rem; /* typography.caption */
     border-radius: 9999px;
     font-size: 0.7rem;
     display: inline-flex;
@@ -372,14 +412,14 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.6); /* Darker backdrop */
     backdrop-filter: blur(4px);
 }
 .modal-content {
-    background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+    background: var(--colors-canvas); /* Pure White */
     margin: 5% auto;
     padding: 1.5rem;
-    border-radius: 1.5rem;
+    border-radius: 18px; /* rounded.lg */
     width: 90%;
     max-width: 520px;
     position: relative;
@@ -393,7 +433,7 @@ body {
 .modal-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Align close button to top-right */
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 0.8rem;
     margin-bottom: 1rem;
@@ -401,10 +441,10 @@ body {
 .close-modal {
     background: #f1f5f9;
     border: none;
-    width: 30px;
-    height: 30px;
+    width: 32px; /* Adjusted for touch target */
+    height: 32px; /* Adjusted for touch target */
     border-radius: 50%;
-    font-size: 1.2rem;
+    font-size: 1rem;
     cursor: pointer;
     color: #64748b;
     transition: all 0.2s;
@@ -414,8 +454,8 @@ body {
 }
 .close-modal:hover {
     background: #ef4444;
-    color: white;
-    transform: rotate(90deg);
+    color: var(--colors-canvas);
+    transform: rotate(90deg) scale(1.05);
 }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -423,7 +463,7 @@ body {
 @media (max-width: 768px) {
     .glass-card { border-radius: 1rem; }
     .btn-modern { width: 100%; justify-content: center; }
-    .winner-content { flex-direction: column; text-align: center; }
+    .winner-content { flex-direction: column; text-align: center; gap: 0.5rem; }
     .winner-info { text-align: center; }
 }
 @media print {
@@ -431,11 +471,11 @@ body {
     body { background: white; }
     .glass-card { box-shadow: none; border: 1px solid #ddd; }
 }
-.kop-container {
-    background: white;
-    border-radius: 1rem;
+.kop-container { /* Adapted to Apple card style */
+    background: var(--colors-canvas);
+    border-radius: 18px; /* rounded.lg */
     padding: 1rem;
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-lg); /* 24px */
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 .kop-container img {
@@ -460,13 +500,13 @@ body {
     <!-- Header -->
     <div class="glass-card p-5 mb-6">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" style="letter-spacing: -0.02em;">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                     <i class="fas fa-file-alt text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">LAPORAN HAFALAN</h1>
-                    <p class="text-xs text-gray-500 mt-0.5">Perkembangan Hafalan Santri</p>
+                    <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">PERKEMBANGAN HAFALAN SANTRI</p>
                 </div>
             </div>
             <div class="text-left sm:text-right">
@@ -479,24 +519,24 @@ body {
     <!-- Filter Form -->
     <div class="glass-card p-4 mb-6">
         <form method="GET" action="" class="flex flex-wrap items-end gap-3">
-            <div class="flex-1 min-w-[130px]">
+            <div class="flex-1 min-w-[140px]">
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1 uppercase tracking-wide">Bulan</label>
-                <select name="bulan" class="modern-select text-sm" onchange="this.form.submit()">
+                <select name="bulan" class="apple-select text-sm" onchange="this.form.submit()">
                     <?php foreach ($bulan_list as $bln): ?>
                     <option value="<?= $bln ?>" <?= $selected_bulan == $bln ? 'selected' : '' ?>><?= $bln ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="flex-1 min-w-[100px]">
+            <div class="flex-1 min-w-[120px]">
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1 uppercase tracking-wide">Tahun</label>
-                <select name="tahun" class="modern-select text-sm" onchange="this.form.submit()">
+                <select name="tahun" class="apple-select text-sm" onchange="this.form.submit()">
                     <?php for ($y = 2024; $y <= 2027; $y++): ?>
                     <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
                     <?php endfor; ?>
                 </select>
             </div>
-            <div class="flex-1 mt-5 md:mt-0 md:ml-auto">
-                <a href="kualitas" class="btn-modern w-full justify-center">
+            <div class="flex-1 mt-5 md:mt-0 md:ml-auto flex justify-end">
+                <a href="kualitas.php" class="btn-apple-primary w-full sm:w-auto justify-center">
                     <i class="fas fa-chart-simple text-xs"></i> Nilai Muroja'ah
                 </a>
             </div>
@@ -517,11 +557,11 @@ body {
     <!-- TOP SETORAN -->
     <div class="top-winner-card mb-6">
         <div class="text-center mb-2">
-            <span class="text-xs uppercase tracking-wider opacity-80"><i class="fas fa-crown mr-1"></i> Top Setoran Pekan Ini</span>
+            <span class="text-xs uppercase tracking-wider opacity-80" style="letter-spacing: 0.05em;"><i class="fas fa-star mr-1"></i> Top Setoran Pekan Ini</span>
         </div>
         <?php if ($top_setoran && $top_setoran['nilai'] > 0): ?>
             <div class="winner-content">
-                <div class="winner-medal">🏆</div>
+                <div class="winner-medal">✨</div>
                 <div class="winner-info">
                     <div class="winner-name"><?= htmlspecialchars($top_setoran['nama']) ?></div>
                     <div class="winner-value"><?= $top_setoran['nilai'] ?> <span class="text-sm font-normal">Hal</span></div>
@@ -536,7 +576,7 @@ body {
     </div>
 
     <!-- Tabel Data -->
-    <div class="glass-card overflow-hidden">
+    <div class="glass-card overflow-hidden" style="border-radius: 18px;">
         <div class="p-4 border-b border-gray-200/60 bg-gray-50/50">
             <h3 class="text-base font-semibold text-gray-800 flex items-center gap-2">
                 <i class="fas fa-users text-blue-500"></i> Data Santri
@@ -545,7 +585,7 @@ body {
         </div>
         <div class="table-container">
             <table class="w-full text-sm">
-                <thead class="table-header">
+                <thead class="table-header" style="border-radius: 18px 18px 0 0;">
                     <tr>
                         <th class="px-3 py-3 text-left w-10">No</th>
                         <th class="px-3 py-3 text-left">Nama</th>
@@ -564,7 +604,7 @@ body {
                     <tr><td colspan="10" class="px-4 py-8 text-center text-gray-400 italic">Belum ada data peserta</td></tr>
                     <?php else: ?>
                         <?php foreach ($peserta_list as $index => $peserta): 
-                            $rekap = $rekap_data[$peserta['id']] ?? [];
+                            $rekap = $rekap_data[$peserta['id']] ?? ['jenjang' => '1 SMP']; // Default jenjang
                             $p1 = extractAngka($rekap['pekan_1'] ?? '');
                             $p2 = extractAngka($rekap['pekan_2'] ?? '');
                             $p3 = extractAngka($rekap['pekan_3'] ?? '');
@@ -596,7 +636,7 @@ body {
                             <td class="px-3 py-3 text-center font-semibold text-gray-700"><?= htmlspecialchars($rekap['total_hafalan'] ?? '-') ?></td>
                             <td class="px-3 py-3 text-center">
                                 <button class="btn-modern" onclick="showGrafik('<?= addslashes(htmlspecialchars($peserta['nama'])) ?>', <?= $p1 ?>, <?= $p2 ?>, <?= $p3 ?>, <?= $p4 ?>)">
-                                    <i class="fas fa-chart-bar text-xs"></i> Grafik
+                                    <i class="fas fa-chart-bar text-xs"></i> Lihat Grafik
                                 </button>
                             </td>
                         </tr>
@@ -605,7 +645,7 @@ body {
                 </tbody>
             </table>
         </div>
-        <!-- Legend -->
+        <!-- Legend - Apple-style -->
         <div class="p-4 flex flex-wrap gap-4 text-xs text-gray-500 border-t border-gray-100">
             <span class="flex items-center gap-1"><i class="fas fa-circle text-emerald-500"></i> Ujian</span>
             <span class="flex items-center gap-1"><i class="fas fa-circle text-red-500"></i> &lt;6 Halaman</span>
@@ -615,7 +655,7 @@ body {
 
     <!-- Footer -->
     <div class="mt-8 text-center pb-4">
-        <p class="text-xs text-gray-400">Reqra System · <?= date('Y') ?></p>
+        <p class="text-xs text-gray-400">Reqra by Han · <?= date('Y') ?></p>
     </div>
 
 </div>
@@ -625,7 +665,7 @@ body {
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="modalTitle" class="font-semibold text-gray-800"><i class="fas fa-chart-bar mr-2 text-blue-500"></i>Grafik Perkembangan</h3>
-            <button class="close-modal" onclick="closeModal()">&times;</button>
+            <button class="close-modal" onclick="closeModal()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
             <div class="h-64">

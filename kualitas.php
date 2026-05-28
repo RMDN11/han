@@ -239,6 +239,42 @@ for ($w = 1; $w <= 5; $w++) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Apple-inspired Design System Variables */
+        :root {
+            /* Colors from DESIGN.md */
+            --colors-primary: #0066cc; /* Action Blue */
+            --colors-primary-focus: #0071e3;
+            --colors-primary-on-dark: #2997ff;
+            --colors-canvas: #ffffff; /* Pure White */
+            --colors-canvas-parchment: #f5f5f7; /* Parchment */
+            --colors-surface-pearl: #fafafc; /* Pearl Button */
+            --colors-ink: #1d1d1f; /* Near-Black Ink */
+            --colors-ink-muted-80: #333333;
+            --colors-ink-muted-48: #7a7a7a;
+            --colors-hairline: #e0e0e0;
+
+            /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+            --badge-success-bg: #dcfce7; /* Light Green */
+            --badge-success-text: #166534; /* Dark Green */
+            --badge-danger-bg: #fee2e2; /* Light Red */
+            --badge-danger-text: #991b1b; /* Dark Red */
+            --badge-warning-bg: #fef3c7; /* Light Yellow */
+            --badge-warning-text: #92400e; /* Dark Yellow */
+
+            /* Spacing tokens (using 8px base unit) */
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
+            --spacing-lg: 24px;
+            --spacing-section: 80px;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            line-height: 1.47; /* typography.body line-height */
+        }
+    </style>
+    <style>
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
@@ -246,26 +282,26 @@ for ($w = 1; $w <= 5; $w++) {
             color: #334155;
         }
         .glass-card {
-            background: rgba(255, 255, 255, 0.92);
+            background: var(--colors-canvas);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            border-radius: 1.5rem;
+            border: 1px solid var(--colors-hairline);
+            border-radius: 18px; /* rounded.lg */
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.03);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .glass-card:hover {
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
             transform: translateY(-2px);
-        }
-        .glass-input {
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 0.75rem 1rem;
-            font-size: 0.875rem;
+        } 
+        .apple-select {
+            background: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            border-radius: 8px; /* rounded.sm */
+            padding: 0.6rem 0.8rem; /* typography.caption */
+            font-size: 0.875rem; /* typography.caption */
             width: 100%;
-            appearance: none;
+            color: var(--colors-ink);
             background-image: url("image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 0.75rem center;
@@ -273,31 +309,31 @@ for ($w = 1; $w <= 5; $w++) {
             transition: all 0.2s ease;
         }
         .glass-input:focus {
+            border-color: var(--colors-primary);
             outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.12);
-            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2); /* Focus Blue effect */
+            background: var(--colors-canvas);
         }
         .badge-success { 
-            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); 
-            color: #166534; 
-            border: none;
-            box-shadow: 0 2px 8px rgba(22, 101, 52, 0.1);
+            background: var(--badge-success-bg);
+            color: var(--badge-success-text);
+            border: 1px solid var(--badge-success-bg);
+            box-shadow: none; /* Apple's badges are flat */
         }
         .badge-warning { 
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
-            color: #92400e; 
-            border: none;
-            box-shadow: 0 2px 8px rgba(146, 64, 14, 0.1);
+            background: var(--badge-warning-bg);
+            color: var(--badge-warning-text);
+            border: 1px solid var(--badge-warning-bg);
+            box-shadow: none;
         }
         .badge-danger  { 
-            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); 
-            color: #991b1b; 
-            border: none;
-            box-shadow: 0 2px 8px rgba(153, 27, 27, 0.1);
+            background: var(--badge-danger-bg);
+            color: var(--badge-danger-text);
+            border: 1px solid var(--badge-danger-bg);
+            box-shadow: none;
         }
         .status-badge {
-            display: inline-flex; align-items: center; padding: 0.45rem 1.1rem;
+            display: inline-flex; align-items: center; padding: 0.45rem 1.1rem; /* button-primary padding */
             font-size: 0.875rem; font-weight: 600; border-radius: 9999px; gap: 0.5rem;
             transition: transform 0.2s ease;
         }
@@ -305,14 +341,14 @@ for ($w = 1; $w <= 5; $w++) {
         
         .summary-card {
             background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95));
-            border: none;
-            border-radius: 1.5rem;
+            border: 1px solid var(--colors-hairline);
+            border-radius: 18px; /* rounded.lg */
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.8);
             position: relative;
             overflow: hidden;
         }
         .summary-card::before {
-            content: '';
+            content: ''; /* Remove decorative gradient line */
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 3px;
@@ -326,7 +362,7 @@ for ($w = 1; $w <= 5; $w++) {
             background: linear-gradient(90deg, transparent, rgba(139,92,246,0.4), transparent);
         }
         
-        .accordion-content {
+        .accordion-content { /* Adapted for Apple's smooth transitions */
             max-height: 0; overflow: hidden;
             transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -336,13 +372,13 @@ for ($w = 1; $w <= 5; $w++) {
         
         .juz-item {
             background: linear-gradient(135deg, #ffffff, #f8fafc);
-            border: 1px solid rgba(226, 232, 240, 0.6);
-            border-radius: 1rem;
+            border: 1px solid var(--colors-hairline);
+            border-radius: 11px; /* rounded.md */
             transition: all 0.2s ease;
         }
         .juz-item:hover {
-            border-color: rgba(59, 130, 246, 0.4);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border-color: var(--colors-primary);
+            box-shadow: 0 0 0 1px rgba(0, 102, 204, 0.1);
             transform: translateY(-1px);
         }
         
@@ -357,29 +393,31 @@ for ($w = 1; $w <= 5; $w++) {
 <body class="min-h-screen pb-12">
     <div class="max-w-6xl mx-auto px-4 py-8">
         
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg animate-float">
-                    <i class="fas fa-book-quran text-2xl"></i>
+        <!-- Header - Adapted to Apple's style -->
+        <div class="glass-card p-5 mb-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">KUALITAS MUROJA'AH</h1>
+                        <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">PERKEMBANGAN HAFALAN SANTRI</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-800 tracking-tight">Kualitas Muroja'ah</h1>
-                    <p class="text-sm text-gray-500 font-medium"><?= $bulan_list[$bulan] ?> <?= $tahun ?></p>
+                <div class="text-left sm:text-right">
+                    <p class="text-sm font-medium text-gray-700">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
+                    <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
                 </div>
             </div>
-            <div class="text-left md:text-right glass-card px-5 py-3 inline-block">
-                <span class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Santri Terpilih</span>
-                <div class="text-lg font-semibold text-gray-800"><?= $nama_peserta ?: 'Belum Memilih' ?></div>
-            </div>
-        </header>
+        </div>
 
         <!-- Filter Form (NO PRINT BUTTON) -->
         <div class="glass-card p-5 mb-8">
             <form method="GET" action="" class="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <div class="md:col-span-5">
                     <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wide">Nama Santri</label>
-                    <select name="peserta_id" class="glass-input text-gray-700 cursor-pointer" onchange="this.form.submit()">
+                    <select name="peserta_id" class="apple-select text-gray-700 cursor-pointer" onchange="this.form.submit()">
                         <option value="">-- Pilih Nama --</option>
                         <?php foreach ($peserta_list as $p): ?>
                             <option value="<?= $p['id'] ?>" <?= $peserta_id == $p['id'] ? 'selected' : '' ?>><?= htmlspecialchars($p['nama']) ?></option>
@@ -387,16 +425,16 @@ for ($w = 1; $w <= 5; $w++) {
                     </select>
                 </div>
                 <div class="md:col-span-3">
-                    <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wide">Bulan</label>
-                    <select name="bulan" class="glass-input text-gray-700 cursor-pointer" onchange="this.form.submit()">
+                    <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wide">BULAN</label>
+                    <select name="bulan" class="apple-select text-gray-700 cursor-pointer" onchange="this.form.submit()">
                         <?php for ($i=1; $i<=12; $i++): ?>
                             <option value="<?= $i ?>" <?= $bulan == $i ? 'selected' : '' ?>><?= $bulan_list[$i] ?></option>
                         <?php endfor; ?>
                     </select>
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wide">Tahun</label>
-                    <select name="tahun" class="glass-input text-gray-700 cursor-pointer" onchange="this.form.submit()">
+                    <label class="block text-xs font-semibold text-gray-500 mb-2 ml-1 uppercase tracking-wide">TAHUN</label>
+                    <select name="tahun" class="apple-select text-gray-700 cursor-pointer" onchange="this.form.submit()">
                         <?php $cy = date('Y'); for ($y=$cy; $y>=$cy-3; $y--): ?>
                             <option value="<?= $y ?>" <?= $tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
                         <?php endfor; ?>
@@ -411,10 +449,10 @@ for ($w = 1; $w <= 5; $w++) {
         <?php if ($peserta_id > 0): ?>
             <!-- DASHBOARD SUMMARY -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                
                 <!-- Card Kualitas Utama -->
                 <div class="summary-card quality-card p-6 flex flex-col justify-center items-center text-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Kualitas Bulan Ini</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3" style="letter-spacing: 0.05em;">Kualitas Bulan Ini</span>
+                    <div class="text-lg font-semibold text-gray-800 mb-2"><?= $nama_peserta ?></div>
                     <div class="status-badge text-lg px-7 py-4 <?= $monthly_quality['class'] ?> shadow-lg transform hover:scale-105 transition-transform">
                         <i class="fas <?= $monthly_quality['icon'] ?>"></i>
                         <?= $monthly_quality['status'] ?>
@@ -433,7 +471,7 @@ for ($w = 1; $w <= 5; $w++) {
 
                 <!-- Card Total Muroja'ah -->
                 <div class="summary-card total-card p-6 flex flex-col justify-center items-center text-center">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Total Muroja'ah</span>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3" style="letter-spacing: 0.05em;">Total Muroja'ah</span>
                     <div class="flex items-baseline gap-2">
                         <span class="text-6xl font-bold bg-gradient-to-br from-gray-800 to-gray-600 bg-clip-text text-transparent">
                             <?= $monthly_stats['total_sessions'] ?>
@@ -452,10 +490,10 @@ for ($w = 1; $w <= 5; $w++) {
 
             <!-- DETAIL PEKANAN -->
             <div class="glass-card overflow-hidden">
-                <div class="p-5 border-b border-gray-200/60 bg-gradient-to-r from-gray-50/80 to-white/80 flex justify-between items-center">
+                <div class="p-5 border-b border-gray-200/60 bg-gray-50/50 flex justify-between items-center">
                     <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
                         <i class="fas fa-layer-group text-blue-500"></i> Rincian Per Pekan
-                        <span class="text-xs font-normal text-gray-400 ml-2">(Minggu-Sabtu)</span>
+                        <span class="text-xs font-normal text-gray-400 ml-2" style="letter-spacing: -0.02em;">(Minggu-Sabtu)</span>
                     </h2>
                 </div>
                 <div class="p-2 md:p-5 space-y-3">
@@ -463,7 +501,7 @@ for ($w = 1; $w <= 5; $w++) {
                     <div class="border border-gray-200/60 rounded-xl overflow-hidden bg-white/80 hover:shadow-md transition-all backdrop-blur-sm">
                         <button onclick="toggleWeek(<?= $w['index'] ?>)" class="w-full flex items-center justify-between p-4 bg-white/60 hover:bg-gray-50/80 transition-colors cursor-pointer">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/10 to-indigo-500/10 flex items-center justify-center text-blue-600 font-bold border border-blue-200/50">
+                                <div class="w-10 h-10 rounded-full bg-blue-50/50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
                                     <?= $w['index'] ?>
                                 </div>
                                 <div class="text-left">
@@ -486,7 +524,7 @@ for ($w = 1; $w <= 5; $w++) {
                         </button>
 
                         <div id="week-<?= $w['index'] ?>" class="accordion-content <?= $w['index'] == 1 && $w['has_data'] ? 'open' : '' ?>">
-                            <div class="p-4 border-t border-gray-100/60 bg-gradient-to-b from-gray-50/40 to-white/40">
+                            <div class="p-4 border-t border-gray-100/60 bg-gray-50/40">
                                 <?php if (empty($w['juz_details'])): ?>
                                     <div class="text-center py-6 text-gray-400 italic text-sm">
                                         <i class="fas fa-mug-hot mb-2 text-lg block opacity-50"></i>Belum ada setoran di pekan ini.
@@ -494,7 +532,7 @@ for ($w = 1; $w <= 5; $w++) {
                                 <?php else: ?>
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         <?php foreach ($w['juz_details'] as $juz): ?>
-                                            <div class="juz-item p-3 flex items-center justify-between">
+                                            <div class="juz-item p-3 flex items-center justify-between" style="border-radius: 11px;">
                                                 <div>
                                                     <div class="text-sm font-bold text-gray-700">Juz <?= $juz['juz'] ?></div>
                                                     <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
@@ -529,7 +567,7 @@ for ($w = 1; $w <= 5; $w++) {
         <?php else: ?>
             <div class="glass-card p-16 text-center">
                 <div class="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl animate-float">📖</div>
-                <h3 class="text-xl font-bold text-gray-700 mb-2">Pilih Nama Santri</h3>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2">Pilih Nama Santri</h3>
                 <p class="text-gray-500 max-w-md mx-auto">Silakan pilih nama santri pada filter di atas untuk melihat laporan kualitas muroja'ah.</p>
             </div>
         <?php endif; ?>

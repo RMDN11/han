@@ -587,6 +587,41 @@ if ($selected_peserta_id > 0) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Apple-inspired Design System Variables */
+:root {
+    /* Colors from DESIGN.md */
+    --colors-primary: #0066cc; /* Action Blue */
+    --colors-primary-focus: #0071e3;
+    --colors-primary-on-dark: #2997ff;
+    --colors-canvas: #ffffff; /* Pure White */
+    --colors-canvas-parchment: #f5f5f7; /* Parchment */
+    --colors-surface-pearl: #fafafc; /* Pearl Button */
+    --colors-ink: #1d1d1f; /* Near-Black Ink */
+    --colors-ink-muted-80: #333333;
+    --colors-ink-muted-48: #7a7a7a;
+    --colors-hairline: #e0e0e0;
+
+    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+    --badge-success-bg: #dcfce7; /* Light Green */
+    --badge-success-text: #166534; /* Dark Green */
+    --badge-danger-bg: #fee2e2; /* Light Red */
+    --badge-danger-text: #991b1b; /* Dark Red */
+    --badge-warning-bg: #fef3c7; /* Light Yellow */
+    --badge-warning-text: #92400e; /* Dark Yellow */
+
+    /* Spacing tokens (using 8px base unit) */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
+    --spacing-lg: 24px;
+    --spacing-section: 80px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.47; /* typography.body line-height */
+}
+
 /* GLASSMORPHISM & MODERN UI */
 * {
     -webkit-tap-highlight-color: transparent;
@@ -595,18 +630,18 @@ if ($selected_peserta_id > 0) {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+    background: var(--colors-canvas-parchment); /* Parchment */
     background-attachment: fixed;
-    color: #334155;
+    color: var(--colors-ink); /* Near-Black Ink */
     min-height: 100vh;
 }
 
 /* Glassmorphism Cards */
 .glass-card {
-    background: rgba(255, 255, 255, 0.75);
+    background: var(--colors-canvas);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--colors-hairline);
     border-radius: 20px;
     box-shadow: 
         0 8px 32px rgba(0, 0, 0, 0.08),
@@ -625,15 +660,15 @@ body {
 
 /* Modern Inputs */
 .modern-input, .modern-select {
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--colors-canvas);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(203, 213, 225, 0.6);
-    border-radius: 12px;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    border: 1px solid var(--colors-hairline);
+    border-radius: 8px; /* rounded.sm */
+    padding: 0.6rem 0.8rem; /* typography.caption */
+    font-size: 0.875rem; /* typography.caption */
     transition: all 0.2s ease;
-    color: #475569;
-}
+    color: var(--colors-ink);
+} 
 
 .modern-input:focus, .modern-select:focus {
     outline: none;
@@ -641,12 +676,12 @@ body {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     background: rgba(255, 255, 255, 0.95);
 }
-
 .modern-input:hover, .modern-select:hover {
     border-color: #94a3b8;
 }
 
 /* Modern Buttons */
+/* btn-apple-primary equivalent */
 .btn-glass {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(79, 70, 229, 0.9));
     border: 1px solid rgba(99, 102, 241, 0.3);
@@ -665,6 +700,7 @@ body {
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
 }
 
+/* btn-apple-success equivalent */
 .btn-glass-success {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
     border: 1px solid rgba(34, 197, 94, 0.3);
@@ -676,6 +712,7 @@ body {
     box-shadow: 0 6px 20px rgba(22, 163, 74, 0.45);
 }
 
+/* btn-apple-danger equivalent */
 .btn-glass-danger {
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
     border: 1px solid rgba(239, 68, 68, 0.3);
@@ -687,12 +724,13 @@ body {
     box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45);
 }
 
+/* btn-apple-outline equivalent */
 .btn-glass-outline {
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    color: #475569;
-    border-radius: 12px;
-    padding: 0.6rem 1.2rem;
+    background: var(--colors-surface-pearl); /* Pearl Button */
+    border: 1px solid var(--colors-hairline);
+    color: var(--colors-ink-muted-80);
+    border-radius: 11px; /* rounded.md */
+    padding: 0.625rem 1.25rem; /* Adjusted padding */
     font-size: 0.8rem;
     transition: all 0.2s ease;
 }
@@ -704,25 +742,25 @@ body {
 }
 
 /* Badges */
-.badge-lancar {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
-    color: #15803d;
-    border: 1px solid rgba(34, 197, 94, 0.3);
+.badge-lancar { /* badge-success */
+    background: var(--badge-success-bg);
+    color: var(--badge-success-text);
+    border: 1px solid var(--badge-success-bg);
 }
 
-.badge-cukup {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.1));
-    color: #b45309;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+.badge-cukup { /* badge-warning */
+    background: var(--badge-warning-bg);
+    color: var(--badge-warning-text);
+    border: 1px solid var(--badge-warning-bg);
 }
 
-.badge-tidak {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
-    color: #b91c1c;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+.badge-tidak { /* badge-danger */
+    background: var(--badge-danger-bg);
+    color: var(--badge-danger-text);
+    border: 1px solid var(--badge-danger-bg);
 }
 
-/* Table Styles */
+/* Table Header Styles */
 .modern-table-header {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(148, 163, 184, 0.05));
     color: #475569;
@@ -734,7 +772,7 @@ body {
 }
 
 .history-section {
-    background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(241, 245, 249, 0.6));
+    background: var(--colors-canvas-parchment); /* Parchment */
     border-bottom: 1px solid rgba(203, 213, 225, 0.3);
 }
 
@@ -746,11 +784,11 @@ body {
 }
 
 .modal-content {
-    background: rgba(255, 255, 255, 0.92);
+    background: var(--colors-canvas);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    border-radius: 24px;
+    border: 1px solid var(--colors-hairline);
+    border-radius: 18px; /* rounded.lg */
     box-shadow: 
         0 25px 50px -12px rgba(0, 0, 0, 0.25),
         0 0 0 1px rgba(255, 255, 255, 0.1);
@@ -828,11 +866,11 @@ body {
 <div class="max-w-7xl mx-auto">
 <!-- Modern Header -->
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3" style="letter-spacing: -0.02em;">
         <div class="text-4xl text-indigo-500 drop-shadow-sm">﷽</div>
         <div>
-            <h1 class="text-2xl font-light tracking-wide text-gray-700">muroja'ah</h1>
-            <p class="text-xs text-gray-400 mt-0.5">monitoring kualitas hafalan</p>
+            <h1 class="text-2xl font-semibold text-gray-800 tracking-tight">MUROJA'AH</h1>
+            <p class="text-xs text-gray-500 mt-0.5">MONITORING KUALITAS HAFALAN</p>
         </div>
     </div>
     <div class="text-left md:text-right glass-card px-4 py-3 inline-flex items-center gap-3">
@@ -846,7 +884,7 @@ body {
 
 <!-- Alert Messages -->
 <?php if (!empty($message)): ?>
-<div class="mb-6 px-5 py-4 glass-card border-l-4 <?= $message_type === 'success' ? 'border-green-500 bg-green-50/50 text-green-700' : ($message_type === 'error' ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-amber-500 bg-amber-50/50 text-amber-700') ?>">
+<div class="mb-6 px-5 py-4 glass-card border-l-4 <?= $message_type === 'success' ? 'border-green-500 bg-green-50/50 text-green-700' : ($message_type === 'error' ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-yellow-500 bg-yellow-50/50 text-yellow-700') ?>">
     <div class="flex items-center gap-3">
         <i class="fas fa-<?= $message_type === 'success' ? 'circle-check' : ($message_type === 'error' ? 'circle-exclamation' : 'circle-info') ?> text-lg"></i>
         <span class="text-sm font-medium"><?= htmlspecialchars($message) ?></span>
@@ -858,7 +896,7 @@ body {
 <?php if ($selected_peserta_id > 0): ?>
 <div class="mb-7 flex justify-end">
     <a href="manzil-report.php?peserta_id=<?= $selected_peserta_id ?>"
-        class="inline-flex items-center px-5 py-2.5 btn-glass-outline text-sm transition-all duration-200 hover:shadow-md">
+        class="inline-flex items-center px-5 py-2.5 btn-glass-outline text-sm">
         <i class="fas fa-chart-simple mr-2 text-xs"></i> Laporan Mingguan
     </a>
 </div>
@@ -867,24 +905,24 @@ body {
 <!-- Kelola Santri -->
 <div class="glass-card mb-7 p-6">
     <div class="flex items-center gap-2 mb-5">
-        <i class="fas fa-users text-indigo-400 text-sm"></i>
-        <span class="text-sm font-medium text-gray-600 tracking-wide">KELOLA SANTRI</span>
+        <i class="fas fa-users text-blue-500 text-sm"></i>
+        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Tambah Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-3">
             <input type="text" name="nama_baru"
                 class="flex-1 modern-input text-sm"
-                placeholder="Nama santri baru..." required>
+                placeholder="Nama santri baru" required>
             <button type="submit" name="tambah_peserta"
                 class="px-5 btn-glass-success text-sm flex items-center justify-center whitespace-nowrap">
-                <i class="fas fa-plus mr-2 text-xs"></i> Tambah
+                <i class="fas fa-plus mr-2 text-xs"></i> Tambah Santri
             </button>
         </form>
         <!-- Hapus Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-3">
             <select name="peserta_id_hapus" class="flex-1 modern-select text-sm" required>
-                <option value="">-- Pilih santri untuk dihapus --</option>
+                <option value="">-- Pilih santri --</option>
                 <?php foreach ($peserta_list as $peserta): ?>
                 <option value="<?= $peserta['id'] ?>"><?= htmlspecialchars($peserta['nama']) ?></option>
                 <?php endforeach; ?>
@@ -892,7 +930,7 @@ body {
             <button type="submit" name="hapus_peserta"
                 class="px-5 btn-glass-danger text-sm flex items-center justify-center whitespace-nowrap"
                 onclick="return confirm('Yakin ingin menghapus santri ini?')">
-                <i class="fas fa-trash-alt mr-2 text-xs"></i> Hapus
+                <i class="fas fa-trash-alt mr-2 text-xs"></i> Hapus Santri
             </button>
         </form>
     </div>
@@ -901,11 +939,11 @@ body {
 <!-- Form Input Muroja'ah -->
 <div class="glass-card p-6">
     <div class="flex items-center gap-2 mb-6">
-        <i class="fas fa-pen-to-square text-indigo-400 text-sm"></i>
-        <span class="text-sm font-medium text-gray-600 tracking-wide">INPUT MUROJA'AH · MINGGU INI</span>
+        <i class="fas fa-pen-to-square text-blue-500 text-sm"></i>
+        <span class="text-sm font-medium text-gray-700 tracking-wide">INPUT MUROJA'AH · MINGGU INI</span>
     </div>
     <form method="POST" action="" id="form-murojaah">
-        <!-- Pilih Santri -->
+        <!-- Select Santri -->
         <div class="mb-7 max-w-md">
             <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Santri</label>
             <select name="peserta_id" id="peserta_id" class="w-full modern-select text-sm" required>
@@ -920,7 +958,7 @@ body {
 
         <!-- Tabel Muroja'ah Harian - Responsive -->
         <div class="overflow-x-auto responsive-table">
-            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden">
+            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden" style="border-radius: 18px;">
                 <thead class="modern-table-header">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">Hari</th>
@@ -938,7 +976,7 @@ body {
                     $tanggal_hari = date('Y-m-d', strtotime($hari_map[$key] . ' this week'));
                     $tanggal_tampil = date('d M Y', strtotime($tanggal_hari));
                     ?>
-                    <tr class="hover:bg-gray-50/50 transition-colors">
+                    <tr class="hover:bg-gray-50/50 transition-colors" style="border-radius: 18px;">
                         <td class="px-4 py-4 text-gray-600 font-medium whitespace-nowrap"><?= $hari_nama ?></td>
                         <td class="px-4 py-4 text-gray-400 text-xs whitespace-nowrap"><?= $tanggal_tampil ?></td>
                         <td class="px-4 py-4 text-center">
@@ -952,7 +990,7 @@ body {
                         </td>
                         <td class="px-4 py-4">
                             <div class="juz-container min-w-[320px]" id="juz-container-<?= $key ?>">
-                                <span class="text-gray-400 text-xs italic">pilih jumlah juz terlebih dahulu</span>
+                                <span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>
                             </div>
                         </td>
                         <td class="px-4 py-4 text-center">
@@ -971,7 +1009,7 @@ body {
         <!-- Tombol Simpan -->
         <div class="flex justify-center">
             <button type="submit" name="simpan_murojaah"
-                class="px-10 py-3.5 btn-glass text-sm tracking-wide flex items-center gap-2 shadow-lg">
+                class="px-10 py-3.5 btn-glass text-sm tracking-wide flex items-center gap-2">
                 <i class="fas fa-check text-xs"></i> SIMPAN DATA
             </button>
         </div>
@@ -983,12 +1021,12 @@ body {
     <?php if ($selected_peserta_id > 0): ?>
     <div class="glass-card">
         <div class="px-6 py-5 history-section flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3" style="letter-spacing: -0.02em;">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                    <i class="fas fa-clock-rotate-left text-indigo-500"></i>
+                    <i class="fas fa-clock-rotate-left text-blue-500"></i>
                 </div>
                 <div>
-                    <span class="text-sm font-medium text-gray-600 tracking-wide block">
+                    <span class="text-sm font-medium text-gray-700 tracking-wide block">
                         RIWAYAT MUROJA'AH
                     </span>
                     <span class="text-xs text-gray-400"><?= htmlspecialchars($selected_peserta_nama) ?></span>
@@ -996,7 +1034,7 @@ body {
             </div>
             <button onclick="openHistoryModal()"
                 class="inline-flex items-center gap-2 px-5 py-2.5 btn-glass-outline text-sm transition-all duration-200 hover:shadow-md">
-                <i class="fas fa-eye"></i> Preview Riwayat
+                <i class="fas fa-eye"></i> Lihat Riwayat
             </button>
         </div>
     </div>
@@ -1010,7 +1048,7 @@ body {
 
 <!-- Footer -->
 <div class="mt-12 text-center pb-4">
-    <p class="text-xs text-gray-400 tracking-wide">
+    <p class="text-xs text-gray-400 tracking-wide" style="letter-spacing: -0.02em;">
         <i class="fas fa-heart mr-1 text-[10px] text-red-400"></i>
         Reqra by Han · <?= date('Y') ?>
     </p>
@@ -1023,10 +1061,10 @@ body {
         <!-- Modal Header -->
         <div class="px-6 py-5 border-b border-gray-200/60 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
                     <i class="fas fa-book-open"></i>
                 </div>
-                <div>
+                <div style="letter-spacing: -0.02em;">
                     <h3 class="text-lg font-semibold text-gray-700">Riwayat Muroja'ah</h3>
                     <p class="text-xs text-gray-400" id="modalPesertaNama">Memuat data...</p>
                 </div>
@@ -1051,10 +1089,10 @@ body {
         <!-- Modal Footer -->
         <div class="px-6 py-4 border-t border-gray-200/60 bg-gray-50/50 flex justify-end gap-3">
             <button onclick="closeHistoryModal()" class="px-5 py-2.5 btn-glass-outline text-sm">
-                <i class="fas fa-times mr-2"></i>Tutup
+                <i class="fas fa-times mr-2"></i> Tutup
             </button>
             <button onclick="printHistory()" class="px-5 py-2.5 btn-glass text-sm">
-                <i class="fas fa-print mr-2"></i>Cetak
+                <i class="fas fa-print mr-2"></i> Cetak
             </button>
         </div>
     </div>
@@ -1064,10 +1102,10 @@ body {
 <div id="editModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
     <div class="modal-content w-full max-w-md animate-fade-in">
         <div class="px-6 py-5 border-b border-gray-200/60 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-pencil-alt text-indigo-500"></i>
-                <span class="text-sm font-medium text-gray-700">EDIT DATA</span>
-            </div>
+            <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
+                <i class="fas fa-pencil-alt text-blue-500"></i> EDIT DATA
+            </h3>
+
             <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500">
                 <i class="fas fa-times text-sm"></i>
             </button>
@@ -1076,7 +1114,7 @@ body {
             <input type="hidden" id="edit_id" name="edit_id">
             <div class="mb-5">
                 <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Juz</label>
-                <select id="edit_juz" name="edit_juz" class="w-full modern-select text-sm" required>
+                <select id="edit_juz" name="edit_juz" class="w-full modern-select text-sm apple-select" required>
                     <?php for ($j = 1; $j <= 30; $j++): ?>
                     <option value="<?= $j ?>">Juz <?= $j ?></option>
                     <?php endfor; ?>
@@ -1085,13 +1123,13 @@ body {
             <div class="grid grid-cols-2 gap-4 mb-5">
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-medium">Ketuk</label>
-                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0"
-                        class="w-full modern-input text-sm text-center" required>
+                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0" 
+                        class="w-full modern-input text-sm text-center apple-input" required>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-medium">Tuntun</label>
-                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0"
-                        class="w-full modern-input text-sm text-center">
+                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0" 
+                        class="w-full modern-input text-sm text-center apple-input">
                 </div>
             </div>
             <div class="mb-6">
@@ -1101,11 +1139,11 @@ body {
             </div>
             <div class="flex gap-3">
                 <button type="button" onclick="closeEditModal()"
-                    class="flex-1 px-4 py-3 border border-gray-200 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-colors">
+                    class="flex-1 px-4 py-3 btn-glass-outline text-sm">
                     Batal
                 </button>
                 <button type="submit" name="edit_data"
-                    class="flex-1 px-4 py-3 btn-glass text-sm flex items-center justify-center">
+                    class="flex-1 px-4 py-3 btn-glass text-sm flex items-center justify-center"> 
                     <i class="fas fa-check mr-2 text-xs"></i> Simpan
                 </button>
             </div>
@@ -1137,20 +1175,20 @@ document.addEventListener('DOMContentLoaded', function() {
             let html = `<div class="space-y-2.5 max-w-lg">`;
             for (let i = 1; i <= jumlah; i++) {
                 html += `
-                <div class="flex flex-wrap items-center gap-2 p-3 bg-white/60 border border-gray-200/60 rounded-xl backdrop-blur-sm">
-                    <span class="text-[11px] text-indigo-600 font-medium min-w-[32px] bg-indigo-50 px-2 py-1 rounded-lg">J${i}</span>
+                <div class="flex flex-wrap items-center gap-2 p-3 bg-white/60 border border-gray-200/60 rounded-lg backdrop-blur-sm">
+                    <span class="text-[11px] text-blue-600 font-medium min-w-[32px] bg-blue-50 px-2 py-1 rounded-lg">J${i}</span>
                     <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
-                        class="flex-1 min-w-[90px] modern-input text-xs py-2 px-3" 
+                        class="flex-1 min-w-[90px] modern-input text-xs py-2 px-3 apple-input" 
                         placeholder="No. Juz" required>
                     <datalist id="juzList-${hari}-${i}">
                         ${generateJuzOptions()}
                     </datalist>
                     <input type="number" name="hari[${hari}][ketuk_${i}]" min="0" max="10" value="0" placeholder="K"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center" title="Jumlah Ketuk">
+                        class="w-14 modern-input text-xs py-2 px-2 text-center apple-input" title="Jumlah Ketuk">
                     <input type="number" name="hari[${hari}][tuntun_${i}]" min="0" max="10" value="0" placeholder="T"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center" title="Jumlah Tuntun">
+                        class="w-14 modern-input text-xs py-2 px-2 text-center apple-input" title="Jumlah Tuntun">
                     <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan"
-                        class="flex-1 min-w-[120px] modern-input text-xs py-2 px-3">
+                        class="flex-1 min-w-[120px] modern-input text-xs py-2 px-3 apple-input">
                 </div>`;
             }
             html += `</div>`;
@@ -1357,7 +1395,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             html += `
             <tr class="hover:bg-gray-50/50 transition-colors animate-fade-in" style="animation-delay: ${index * 50}ms">
-                <td class="px-4 py-4 text-gray-600 font-medium">${hariPendek}</td>
+                <td class="px-4 py-4 text-gray-700 font-medium">${hariPendek}</td>
                 <td class="px-4 py-4 text-gray-400 text-xs">${tanggalFormat}</td>
                 <td class="px-4 py-4">
                     <span class="font-mono text-indigo-600 text-xs bg-indigo-50 px-2 py-1 rounded-lg">${data.juz_list}</span>

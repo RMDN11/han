@@ -155,6 +155,41 @@ function getWarnaPekan($teks) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Apple-inspired Design System Variables */
+:root {
+    /* Colors from DESIGN.md */
+    --colors-primary: #0066cc; /* Action Blue */
+    --colors-primary-focus: #0071e3;
+    --colors-primary-on-dark: #2997ff;
+    --colors-canvas: #ffffff; /* Pure White */
+    --colors-canvas-parchment: #f5f5f7; /* Parchment */
+    --colors-surface-pearl: #fafafc; /* Pearl Button */
+    --colors-surface-tile-1: #272729; /* Near-Black Tile 1 */
+    --colors-surface-tile-2: #2a2a2c; /* Near-Black Tile 2 */
+    --colors-surface-tile-3: #252527; /* Near-Black Tile 3 */
+    --colors-surface-black: #000000; /* Pure Black */
+    --colors-ink: #1d1d1f; /* Near-Black Ink */
+    --colors-body-on-dark: #ffffff;
+    --colors-body-muted: #cccccc;
+    --colors-ink-muted-80: #333333;
+    --colors-ink-muted-48: #7a7a7a;
+    --colors-divider-soft: rgba(0, 0, 0, 0.04);
+    --colors-hairline: #e0e0e0;
+
+    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+    --badge-success-bg: #dcfce7; /* Light Green */
+    --badge-success-text: #166534; /* Dark Green */
+    --badge-danger-bg: #fee2e2; /* Light Red */
+    --badge-danger-text: #991b1b; /* Dark Red */
+    --badge-warning-bg: #fef3c7; /* Light Yellow */
+    --badge-warning-text: #92400e; /* Dark Yellow */
+
+    /* Spacing tokens (using 8px base unit) */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
+    --spacing-lg: 24px;
+}
 /* Modern Glassmorphism & Clean Design */
 :root {
     --glass-bg: rgba(255, 255, 255, 0.88);
@@ -167,17 +202,19 @@ function getWarnaPekan($teks) {
     --danger: #ef4444;
 }
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--colors-canvas-parchment); /* Parchment */
     background-attachment: fixed;
-    color: #334155;
+    color: var(--colors-ink); /* Near-Black Ink */
     -webkit-font-smoothing: antialiased;
+    line-height: 1.47; /* typography.body line-height */
 }
 .glass-card {
-    background: var(--glass-bg);
+    background: var(--colors-canvas); /* Pure White */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--colors-hairline); /* Hairline */
+    /* box-shadow: 0 1px 0 var(--colors-divider-soft); */ /* Soft hairline */
     border-radius: 1.25rem;
     box-shadow: var(--glass-shadow);
     transition: all 0.3s ease;
@@ -186,39 +223,42 @@ body {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
     border-color: rgba(255, 255, 255, 0.9);
 }
-.modern-input, .modern-select {
-    background: rgba(255, 255, 255, 0.7);
-    border: 1px solid #cbd5e1;
-    border-radius: 0.75rem;
-    padding: 0.6rem 0.8rem;
-    font-size: 0.875rem;
+.apple-input, .apple-select {
+    background: var(--colors-canvas);
+    border: 1px solid var(--colors-hairline);
+    border-radius: 8px; /* rounded.sm */
+    padding: 0.6rem 0.8rem; /* typography.caption */
+    font-size: 0.875rem; /* typography.caption */
     width: 100%;
     transition: all 0.2s ease;
+    color: var(--colors-ink);
 }
-.modern-input:focus, .modern-select:focus {
-    border-color: var(--primary);
+.apple-input:focus, .apple-select:focus {
+    border-color: var(--colors-primary); /* Action Blue */
     outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2); /* Focus Blue effect */
+    background: var(--colors-canvas);
 }
-.modern-btn {
-    background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+.btn-apple-primary {
+    background: var(--colors-primary); /* Action Blue */
     border: none;
-    color: white;
-    padding: 0.7rem 1.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.875rem;
+    color: var(--colors-canvas);
+    padding: 0.75rem 1.75rem; /* button-primary padding */
+    font-size: 0.875rem; /* typography.body */
+    font-weight: 500; /* Adjusted to 500 for buttons */
+    border-radius: 9999px; /* rounded.pill */
     transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
 }
-.modern-btn:hover {
+.btn-apple-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+}
+.btn-apple-primary:active {
+    transform: scale(0.95);
 }
 .modern-btn-secondary {
     background: rgba(241, 245, 249, 0.8);
@@ -236,21 +276,21 @@ body {
 .table-container {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid #e2e8f0;
+    border-radius: 18px; /* rounded.lg */
+    background: var(--colors-canvas);
+    border: 1px solid var(--colors-hairline);
 }
 .table-header {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    color: #475569;
-    font-weight: 600;
-    font-size: 0.75rem;
+    background: var(--colors-canvas-parchment);
+    color: var(--colors-ink-muted-80);
+    font-weight: 600; /* typography.caption-strong */
+    font-size: 0.75rem; /* typography.caption */
     text-transform: uppercase;
     letter-spacing: 0.05em;
     position: sticky;
     top: 0;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    z-index: 1; /* Lower z-index for sticky header */
+    box-shadow: 0 1px 0 var(--colors-divider-soft);
 }
 .table-row:hover {
     background-color: rgba(59, 130, 246, 0.04);
@@ -266,13 +306,14 @@ body {
     text-align: center;
     border-radius: 0.5rem;
     transition: background 0.2s;
+    color: var(--colors-ink);
 }
 .pekan-input:focus {
     outline: none;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--colors-canvas);
 }
 .col-highlight {
-    background-color: rgba(59, 130, 246, 0.15) !important;
+    background-color: rgba(0, 102, 204, 0.1) !important; /* Light Action Blue */
 }
 .juz-input {
     background: rgba(248, 250, 252, 0.8);
@@ -281,7 +322,7 @@ body {
 }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: var(--colors-hairline); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 @media (max-width: 768px) {
     .glass-card { border-radius: 1rem; }
@@ -292,7 +333,7 @@ body {
 <body class="min-h-screen p-4 md:p-8">
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="glass-card p-5 mb-6">
+    <div class="glass-card p-5 mb-8">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
@@ -300,11 +341,11 @@ body {
                 </div>
                 <div>
                     <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">LAPORAN PEKANAN</h1>
-                    <p class="text-xs text-gray-500 mt-0.5">PERKEMBANGAN HAFALAN SANTRI</p>
+                    <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">PERKEMBANGAN HAFALAN SANTRI</p>
                 </div>
             </div>
             <div class="text-left sm:text-right">
-                <p class="text-sm font-medium text-gray-700">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
+                <p class="text-sm font-medium text-gray-700" style="letter-spacing: -0.01em;">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
                 <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
             </div>
         </div>
@@ -332,11 +373,11 @@ body {
     <?php endif; ?>
 
     <!-- Filter & Actions -->
-    <div class="glass-card p-4 mb-6">
+    <div class="glass-card p-4 mb-8">
         <form method="GET" action="" class="flex flex-wrap items-end gap-3">
             <div class="flex-1 min-w-[140px]">
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">BULAN</label>
-                <select name="bulan" class="modern-select text-sm" onchange="this.form.submit()">
+                <select name="bulan" class="apple-select text-sm" onchange="this.form.submit()">
                     <?php foreach ($bulan_list as $bln): ?>
                     <option value="<?= $bln ?>" <?= $selected_bulan == $bln ? 'selected' : '' ?>><?= $bln ?></option>
                     <?php endforeach; ?>
@@ -344,7 +385,7 @@ body {
             </div>
             <div class="flex-1 min-w-[100px]">
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">TAHUN</label>
-                <select name="tahun" class="modern-select text-sm" onchange="this.form.submit()">
+                <select name="tahun" class="apple-select text-sm" onchange="this.form.submit()">
                     <?php for ($y = 2025; $y <= 2027; $y++): ?>
                     <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>><?= $y ?></option>
                     <?php endfor; ?>
@@ -352,7 +393,7 @@ body {
             </div>
             <div class="flex-1 min-w-[100px]">
                 <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">PEKAN</label>
-                <select name="pekan" class="modern-select text-sm" onchange="this.form.submit()">
+                <select name="pekan" class="apple-select text-sm" onchange="this.form.submit()">
                     <?php for ($p = 1; $p <= 4; $p++): ?>
                     <option value="<?= $p ?>" <?= $selected_pekan == $p ? 'selected' : '' ?>>Pekan <?= $p ?></option>
                     <?php endfor; ?>
@@ -418,7 +459,7 @@ body {
                         <td class="px-3 py-3">
                             <div class="font-medium text-gray-800"><?= htmlspecialchars($peserta['nama']) ?></div>
                         </td>
-                        <td class="px-2 py-3">
+                        <td class="px-2 py-3 text-center">
                             <input type="text" name="peserta[<?= $peserta['id'] ?>][jenjang]"
                                 value="<?= htmlspecialchars($rekap['jenjang'] ?? '1 SMP') ?>"
                                 class="modern-input text-xs text-center w-full" placeholder="">
@@ -426,7 +467,7 @@ body {
                         <td class="px-2 py-3">
                             <input type="text" name="peserta[<?= $peserta['id'] ?>][juz_sekarang]"
                                 value="<?= htmlspecialchars($rekap['juz_sekarang'] ?? '') ?>"
-                                class="modern-input text-xs text-center w-full juz-input" placeholder="">
+                                class="apple-input text-xs text-center w-full juz-input" placeholder="">
                         </td>
                         <td class="px-2 py-3">
                             <input type="text" name="peserta[<?= $peserta['id'] ?>][pekan_1]"
@@ -451,12 +492,12 @@ body {
                         <td class="px-2 py-3">
                             <input type="text" name="peserta[<?= $peserta['id'] ?>][total_hafalan]"
                                 value="<?= htmlspecialchars($rekap['total_hafalan'] ?? '') ?>"
-                                class="modern-input text-xs text-center w-full" placeholder="">
+                                class="apple-input text-xs text-center w-full" placeholder="">
                         </td>
                         <td class="px-2 py-3">
                             <input type="text" name="peserta[<?= $peserta['id'] ?>][catatan]"
                                 value="<?= htmlspecialchars($rekap['catatan'] ?? '') ?>"
-                                class="modern-input text-xs w-full" placeholder="Catatan">
+                                class="apple-input text-xs w-full" placeholder="Catatan">
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -468,7 +509,7 @@ body {
         <!-- Tombol Simpan -->
         <div class="flex justify-center">
             <button type="submit" name="simpan_rekap"
-                class="w-full sm:w-auto px-8 py-3 modern-btn text-sm tracking-wide shadow-lg">
+                class="w-full sm:w-auto px-8 py-3 btn-apple-primary text-sm tracking-wide shadow-lg">
                 <i class="fas fa-save text-xs"></i> SIMPAN REKAP
             </button>
         </div>

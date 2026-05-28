@@ -174,70 +174,116 @@ function getWarnaPekan($teks) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Rekap Pekanan · Perkembangan Hafalan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* Flat Minimalist Design dengan Responsive Mobile */
+        /* Apple-inspired Design System */
+        :root {
+            /* Colors from DESIGN.md */
+            --colors-primary: #0066cc; /* Action Blue */
+            --colors-primary-focus: #0071e3;
+            --colors-primary-on-dark: #2997ff;
+            --colors-canvas: #ffffff; /* Pure White */
+            --colors-canvas-parchment: #f5f5f7; /* Parchment */
+            --colors-surface-pearl: #fafafc; /* Pearl Button */
+            --colors-surface-tile-1: #272729; /* Near-Black Tile 1 */
+            --colors-surface-tile-2: #2a2a2c; /* Near-Black Tile 2 */
+            --colors-surface-tile-3: #252527; /* Near-Black Tile 3 */
+            --colors-surface-black: #000000; /* Pure Black */
+            --colors-ink: #1d1d1f; /* Near-Black Ink */
+            --colors-body-on-dark: #ffffff;
+            --colors-body-muted: #cccccc;
+            --colors-ink-muted-80: #333333;
+            --colors-ink-muted-48: #7a7a7a;
+            --colors-divider-soft: rgba(0, 0, 0, 0.04);
+            --colors-hairline: #e0e0e0;
+
+            /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+            --badge-success-bg: #dcfce7; /* Light Green */
+            --badge-success-text: #166534; /* Dark Green */
+            --badge-danger-bg: #fee2e2; /* Light Red */
+            --badge-danger-text: #991b1b; /* Dark Red */
+            --badge-warning-bg: #fef3c7; /* Light Yellow */
+            --badge-warning-text: #92400e; /* Dark Yellow */
+        }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background-color: #faf8f5;
-            color: #4a4a4a;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--colors-canvas-parchment);
+            color: var(--colors-ink);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.47; /* typography.body line-height */
         }
         
-        .flat-card {
-            background-color: #ffffff;
-            border: 1px solid #eae2d7;
+        .apple-card {
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            border-radius: 18px; /* rounded.lg */
+            box-shadow: 0 1px 0 var(--colors-divider-soft);
         }
         
-        .flat-input {
-            border: 1px solid #e2dcd5;
-            background-color: #ffffff;
-            padding: 0.5rem 0.5rem;
-            font-size: 0.8rem;
+        .apple-input, .apple-select {
+            background-color: var(--colors-canvas);
+            border: 1px solid var(--colors-hairline);
+            padding: 0.6rem 0.8rem; /* Adjusted from 0.5rem 0.5rem */
+            font-size: 0.875rem; /* typography.caption */
             width: 100%;
-            border-radius: 0;
+            border-radius: 8px; /* rounded.sm */
             box-sizing: border-box;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            color: var(--colors-ink);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
-        .flat-input:focus {
-            border-color: #b7aa99;
+        .apple-input:focus, .apple-select:focus {
+            border-color: var(--colors-primary);
             outline: none;
-            background-color: #fffdfa;
-            white-space: normal;
-            word-wrap: break-word;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2); /* Focus Blue effect */
         }
         
-        .btn-soft-primary {
-            background-color: #d9e2e8;
-            border: 1px solid #c0d0d9;
-            color: #476b7a;
+        .btn-apple-outline {
+            background-color: var(--colors-surface-pearl); /* Pearl Button */
+            border: 1px solid var(--colors-hairline);
+            color: var(--colors-ink-muted-80);
+            padding: 0.625rem 1.25rem; /* Adjusted from 0.625rem 1.5rem */
+            font-size: 0.875rem; /* typography.caption */
+            border-radius: 11px; /* rounded.md */
+            transition: all 0.2s ease;
         }
         
-        .btn-soft-primary:hover {
-            background-color: #c0d0d9;
+        .btn-apple-outline:hover {
+            background-color: var(--colors-canvas);
+            border-color: var(--colors-primary);
+            color: var(--colors-primary);
         }
         
-        .btn-flat {
-            background-color: #a5978b;
-            border: 1px solid #8e8277;
-            color: white;
-            padding: 0.625rem 1.5rem;
-            font-size: 0.875rem;
+        .btn-apple-primary {
+            background-color: var(--colors-primary); /* Action Blue */
+            border: none;
+            color: var(--colors-canvas);
+            padding: 0.75rem 1.75rem; /* button-primary padding */
+            font-size: 0.875rem; /* typography.body */
+            font-weight: 500; /* Adjusted to 500 for buttons */
+            border-radius: 9999px; /* rounded.pill */
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
         }
         
-        .btn-flat:hover {
-            background-color: #8e8277;
+        .btn-apple-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.5);
+        }
+        
+        .btn-apple-primary:active {
+            transform: scale(0.95);
         }
         
         .table-header {
-            background-color: #f5f2ee;
-            color: #5f5b57;
-            font-weight: 500;
-            font-size: 0.7rem;
+            background-color: var(--colors-canvas-parchment);
+            color: var(--colors-ink-muted-80);
+            font-weight: 600; /* typography.caption-strong */
+            font-size: 0.75rem; /* typography.caption */
             text-transform: uppercase;
             letter-spacing: 0.03em;
             white-space: nowrap;
@@ -246,7 +292,7 @@ function getWarnaPekan($teks) {
         .sticky-header {
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 1; /* Lower z-index for sticky header */
             box-shadow: 0 1px 0 #e2dcd5;
         }
         
@@ -256,7 +302,7 @@ function getWarnaPekan($teks) {
             -webkit-overflow-scrolling: touch;
             margin: 0 -1rem;
             padding: 0 1rem;
-            width: calc(100% + 2rem);
+            width: calc(100% + 2rem); /* Adjust for full width on small screens */
         }
         
         .table-container table {
@@ -274,11 +320,11 @@ function getWarnaPekan($teks) {
             }
             
             .filter-item {
-                width: 100%;
+                width: 100%; /* Full width for filter items */
             }
             
             .filter-select {
-                width: 100%;
+                width: 100%; /* Full width for select */
             }
             
             .btn-lihat-rekap {
@@ -290,16 +336,16 @@ function getWarnaPekan($teks) {
         /* Untuk layar sangat kecil */
         @media (max-width: 480px) {
             .table-container table {
-                min-width: 800px;
+                min-width: 700px; /* Further reduced for very small screens */
             }
             
-            .flat-input {
-                font-size: 0.7rem;
-                padding: 0.4rem 0.3rem;
+            .apple-input {
+                font-size: 0.75rem; /* typography.caption */
+                padding: 0.5rem 0.6rem;
             }
             
             th {
-                font-size: 0.65rem;
+                font-size: 0.7rem;
             }
             
             td {
@@ -308,11 +354,11 @@ function getWarnaPekan($teks) {
         }
         
         .col-highlight {
-            background-color: #e8e0d7 !important;
+            background-color: rgba(0, 102, 204, 0.1) !important; /* Light Action Blue */
         }
         
         .juz-input {
-            background-color: #f5f0ea;
+            background-color: var(--colors-canvas-parchment);
         }
         
         .catatan-cell {
@@ -328,7 +374,7 @@ function getWarnaPekan($teks) {
             width: 100%;
             border: none;
             background: transparent;
-            padding: 0.5rem;
+            padding: 0.6rem; /* Adjusted padding */
             font-size: 0.8rem;
             text-align: center;
             box-sizing: border-box;
@@ -336,11 +382,11 @@ function getWarnaPekan($teks) {
         
         .pekan-input:focus {
             outline: none;
-            background-color: #fffdfa;
+            background-color: var(--colors-canvas);
         }
         
-        .bg-red-100 { background-color: #fee2e2; }
-        .bg-green-100 { background-color: #dcfce7; }
+        .bg-red-100 { background-color: var(--badge-danger-bg); color: var(--badge-danger-text); }
+        .bg-green-100 { background-color: var(--badge-success-bg); color: var(--badge-success-text); }
         
         /* Card view untuk mobile saat tabel tidak muat */
         @media (max-width: 640px) {
@@ -358,28 +404,35 @@ function getWarnaPekan($teks) {
 <body class="p-3 md:p-6">
     <div class="max-w-7xl mx-auto">
         
-        <!-- Header -->
-        <div class="mb-6">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2">
-                <div>
-                    <h1 class="text-xl md:text-2xl font-light tracking-wide text-[#5d6e6f]">LAPORAN PEKANAN</h1>
-                    <p class="text-xs md:text-sm text-[#9aa6a7]">PERKEMBANGAN HAFALAN SANTRI</p>
+        <!-- Header - Adapted to Apple's style -->
+        <div class="mb-8 apple-card p-5">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">LAPORAN PEKANAN</h1>
+                        <p class="text-xs text-gray-500 mt-0.5">PERKEMBANGAN HAFALAN SANTRI</p>
+                    </div>
                 </div>
                 <div class="text-left sm:text-right">
-                    <p class="text-xs font-medium text-[#7c8c8d]">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
-                    <p class="text-xs text-[#a5b1b2]">MAHAD IMAM SYATHBY BOGOR</p>
+                    <p class="text-sm font-medium text-gray-700">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
+                    <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
                 </div>
             </div>
             
             <!-- Info Pengampu - Responsive -->
-            <div class="flex flex-wrap info-pengampu items-center justify-between gap-3 mt-3 p-3 bg-[#fcfbf9] border border-[#ece7e1] text-sm">
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[#6a787a]">Nama Pengampu:</span>
-                    <span class="font-medium text-[#5d6e6f]">Farhan Ramadhan</span>
+            <div class="mt-4 p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex flex-wrap items-center gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-user-tie text-blue-500"></i>
+                    <span class="text-gray-600">Pengampu:</span>
+                    <span class="font-medium text-gray-800">Farhan Ramadhan</span>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[#6a787a]">Halaqah:</span>
-                    <span class="font-medium text-[#5d6e6f]">1</span>
+                <div>
+                    <i class="fas fa-layer-group text-blue-500"></i>
+                    <span class="text-gray-600">Halaqah:</span>
+                    <span class="font-medium text-gray-800">1</span>
                 </div>
             </div>
         </div>
@@ -387,17 +440,17 @@ function getWarnaPekan($teks) {
         <!-- Alert Messages -->
         <?php if (!empty($message)): ?>
         <div class="mb-4 px-4 py-3 border text-sm <?= $message_type === 'success' ? 'bg-[#ecf3f0] border-[#d1e0db] text-[#3f6a5c]' : 'bg-[#f8edec] border-[#eddbda] text-[#8f5e5e]' ?>">
-            <i class="fas fa-<?= $message_type === 'success' ? 'check' : 'exclamation' ?> mr-2"></i>
+            <i class="fas fa-<?= $message_type === 'success' ? 'check-circle' : 'exclamation-triangle' ?> mr-2"></i>
             <?= htmlspecialchars($message) ?>
         </div>
         <?php endif; ?>
         
         <!-- Filter Bulan & Pekan - Responsive -->
-        <div class="flat-card p-4 mb-5">
+        <div class="apple-card p-4 mb-6">
             <form method="GET" action="" class="filter-container flex flex-wrap sm:flex-nowrap items-end gap-4">
                 <div class="filter-item w-full sm:w-auto">
-                    <label class="block text-xs text-[#7c8c8d] mb-1">BULAN</label>
-                    <select name="bulan" class="filter-select flat-input w-full sm:w-32 text-sm" onchange="this.form.submit()">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">BULAN</label>
+                    <select name="bulan" class="apple-select w-full sm:w-32 text-sm" onchange="this.form.submit()">
                         <?php foreach ($bulan_list as $bln): ?>
                         <option value="<?= $bln ?>" <?= $selected_bulan == $bln ? 'selected' : '' ?>>
                             <?= $bln ?>
@@ -406,8 +459,8 @@ function getWarnaPekan($teks) {
                     </select>
                 </div>
                 <div class="filter-item w-full sm:w-auto">
-                    <label class="block text-xs text-[#7c8c8d] mb-1">TAHUN</label>
-                    <select name="tahun" class="filter-select flat-input w-full sm:w-20 text-sm" onchange="this.form.submit()">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">TAHUN</label>
+                    <select name="tahun" class="apple-select w-full sm:w-20 text-sm" onchange="this.form.submit()">
                         <?php for ($y = 2025; $y <= 2027; $y++): ?>
                         <option value="<?= $y ?>" <?= $selected_tahun == $y ? 'selected' : '' ?>>
                             <?= $y ?>
@@ -416,8 +469,8 @@ function getWarnaPekan($teks) {
                     </select>
                 </div>
                 <div class="filter-item w-full sm:w-auto">
-                    <label class="block text-xs text-[#7c8c8d] mb-1">PEKAN</label>
-                    <select name="pekan" class="filter-select flat-input w-full sm:w-20 text-sm" onchange="this.form.submit()">
+                    <label class="block text-xs font-semibold text-gray-500 mb-1.5 ml-1">PEKAN</label>
+                    <select name="pekan" class="apple-select w-full sm:w-20 text-sm" onchange="this.form.submit()">
                         <?php for ($p = 1; $p <= 4; $p++): ?>
                         <option value="<?= $p ?>" <?= $selected_pekan == $p ? 'selected' : '' ?>>
                             Pekan <?= $p ?>
@@ -425,9 +478,9 @@ function getWarnaPekan($teks) {
                         <?php endfor; ?>
                     </select>
                 </div>
-                <div class="filter-item btn-lihat-rekap w-full sm:w-auto sm:mt-4">
-                    <a href="manzil-report.php" class="inline-flex w-full sm:w-auto items-center justify-center px-4 py-2 btn-soft-primary text-sm border">
-                        <i class="fas fa-chart-simple mr-2 text-xs"></i> Lihat Rekap Muroja'ah
+                <div class="filter-item w-full sm:w-auto sm:mt-4 flex gap-2">
+                    <a href="manzil-report.php" class="inline-flex w-full sm:w-auto items-center justify-center px-4 py-2 btn-apple-outline text-sm">
+                        <i class="fas fa-chart-simple mr-2 text-xs"></i> Rekap Muroja'ah
                     </a>
                 </div>
 				<div class="filter-item btn-lihat-rekap w-full sm:w-auto sm:mt-4">
@@ -439,10 +492,10 @@ function getWarnaPekan($teks) {
         </div>
         
         <!-- Info Bulan dan Pekan - Responsive -->
-        <div class="mb-4 flex flex-wrap items-center gap-3">
-            <span class="text-base font-medium text-[#5d6e6f]"><i class="fas fa-calendar-alt mr-2 text-[#9aa6a7]"></i>Bulan: <?= $selected_bulan ?> <?= $selected_tahun ?></span>
-            <span class="hidden sm:inline w-px h-5 bg-[#e2dcd5]"></span>
-            <span class="text-base font-medium text-[#5d6e6f]"><i class="fas fa-chart-line mr-2 text-[#9aa6a7]"></i>Pekan: <?= $selected_pekan ?></span>
+        <div class="mb-5 flex flex-wrap items-center gap-4 px-2">
+            <span class="text-base font-semibold text-gray-700 flex items-center gap-2"><i class="fas fa-calendar-alt text-blue-500"></i> <?= $selected_bulan ?> <?= $selected_tahun ?></span>
+            <span class="hidden sm:block w-px h-5 bg-gray-300"></span>
+            <span class="text-base font-semibold text-gray-700 flex items-center gap-2"><i class="fas fa-bullseye text-indigo-500"></i> Fokus Pekan <?= $selected_pekan ?></span>
         </div>
         
         <!-- Form Rekap - Responsive Table -->
@@ -450,7 +503,7 @@ function getWarnaPekan($teks) {
             <input type="hidden" name="bulan" value="<?= $selected_bulan ?>">
             <input type="hidden" name="tahun" value="<?= $selected_tahun ?>">
             
-            <div class="table-container border border-[#ece7e1] rounded overflow-hidden">
+            <div class="table-container apple-card overflow-hidden">
                 <table class="w-full text-sm">
                     <thead class="table-header sticky-header">
                         <tr>
@@ -469,7 +522,7 @@ function getWarnaPekan($teks) {
                     <tbody>
                         <?php if (empty($peserta_list)): ?>
                         <tr>
-                            <td colspan="10" class="px-4 py-8 text-center text-[#a5b1b2] italic">
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 italic">
                                 Belum ada data peserta. Silakan tambah peserta di halaman manzil.php
                             </td>
                         </tr>
@@ -477,23 +530,23 @@ function getWarnaPekan($teks) {
                             <?php foreach ($peserta_list as $index => $peserta): 
                                 $rekap = $rekap_data[$peserta['id']] ?? [];
                             ?>
-                            <tr class="border-b border-[#f0ebe5] hover:bg-[#fcfbf9]">
-                                <td class="px-2 py-2 text-[#6a787a]"><?= $index + 1 ?></td>
-                                <td class="px-2 py-2">
-                                    <div class="font-medium text-[#5d6e6f]"><?= htmlspecialchars($peserta['nama']) ?></div>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50/50">
+                                <td class="px-2 py-3 text-gray-500"><?= $index + 1 ?></td>
+                                <td class="px-2 py-3">
+                                    <div class="font-medium text-gray-800"><?= htmlspecialchars($peserta['nama']) ?></div>
                                 </td>
-                                <td class="px-2 py-2 text-center text-[#7c8c8d]">
+                                <td class="px-2 py-3 text-center text-gray-600">
                                     <input type="text" name="peserta[<?= $peserta['id'] ?>][jenjang]" 
                                            value="<?= htmlspecialchars($rekap['jenjang'] ?? '1 SMP') ?>"
-                                           class="flat-input text-xs text-center w-16 sm:w-20" 
+                                           class="apple-input text-xs text-center w-16 sm:w-20" 
                                            placeholder="">
                                 </td>
                                 
                                 <!-- JUZ SEKARANG -->
                                 <td class="px-2 py-2 text-center">
                                     <input type="text" name="peserta[<?= $peserta['id'] ?>][juz_sekarang]" 
-                                           value="<?= htmlspecialchars($rekap['juz_sekarang'] ?? '') ?>"
-                                           class="flat-input text-xs text-center w-12 sm:w-16 font-mono juz-input" 
+                                           value="<?= htmlspecialchars($rekap['juz_sekarang'] ?? '') ?>" 
+                                           class="apple-input text-xs text-center w-12 sm:w-16 font-mono juz-input"
                                            placeholder="">
                                 </td>
                                 
@@ -532,16 +585,16 @@ function getWarnaPekan($teks) {
                                 <!-- Total Hafalan -->
                                 <td class="px-1 py-2">
                                     <input type="text" name="peserta[<?= $peserta['id'] ?>][total_hafalan]" 
-                                           value="<?= htmlspecialchars($rekap['total_hafalan'] ?? '') ?>"
-                                           class="flat-input text-xs text-center w-16 sm:w-20" 
+                                           value="<?= htmlspecialchars($rekap['total_hafalan'] ?? '') ?>" 
+                                           class="apple-input text-xs text-center w-16 sm:w-20"
                                            placeholder="">
                                 </td>
                                 
                                 <!-- Catatan -->
                                 <td class="px-1 py-2 catatan-cell">
                                     <input type="text" name="peserta[<?= $peserta['id'] ?>][catatan]" 
-                                           value="<?= htmlspecialchars($rekap['catatan'] ?? '') ?>"
-                                           class="flat-input text-xs w-24 sm:w-32" 
+                                           value="<?= htmlspecialchars($rekap['catatan'] ?? '') ?>" 
+                                           class="apple-input text-xs w-24 sm:w-32"
                                            placeholder="Catatan">
                                 </td>
                             </tr>
@@ -554,14 +607,14 @@ function getWarnaPekan($teks) {
             <!-- Tombol Simpan - Responsive -->
             <div class="flex justify-center mt-6">
                 <button type="submit" name="simpan_rekap" 
-                        class="w-full sm:w-auto px-6 sm:px-8 py-3 btn-flat text-sm tracking-wide flex items-center justify-center">
+                        class="w-full sm:w-auto px-6 sm:px-8 py-3 btn-apple-primary text-sm tracking-wide flex items-center justify-center">
                     <i class="fas fa-save mr-2 text-xs"></i> SIMPAN REKAP
                 </button>
             </div>
         </form>
         
         <!-- Footer - Reqra by Han -->
-        <div class="mt-8 text-center">
+        <div class="mt-10 text-center">
             <p class="text-xs text-[#a5b1b2] tracking-wide">
                 <i class="fas fa-circle mr-1 text-[6px] align-middle"></i>
                 Reqra by Han · <?= date('Y') ?>

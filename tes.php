@@ -625,6 +625,40 @@ if ($selected_peserta_id > 0) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+/* Apple-inspired Design System Variables */
+:root {
+    /* Colors from DESIGN.md */
+    --colors-primary: #0066cc; /* Action Blue */
+    --colors-primary-focus: #0071e3;
+    --colors-primary-on-dark: #2997ff;
+    --colors-canvas: #ffffff; /* Pure White */
+    --colors-canvas-parchment: #f5f5f7; /* Parchment */
+    --colors-surface-pearl: #fafafc; /* Pearl Button */
+    --colors-ink: #1d1d1f; /* Near-Black Ink */
+    --colors-ink-muted-80: #333333;
+    --colors-ink-muted-48: #7a7a7a;
+    --colors-hairline: #e0e0e0;
+
+    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
+    --badge-success-bg: #dcfce7; /* Light Green */
+    --badge-success-text: #166534; /* Dark Green */
+    --badge-danger-bg: #fee2e2; /* Light Red */
+    --badge-danger-text: #991b1b; /* Dark Red */
+    --badge-warning-bg: #fef3c7; /* Light Yellow */
+    --badge-warning-text: #92400e; /* Dark Yellow */
+
+    /* Spacing tokens (using 8px base unit) */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
+    --spacing-lg: 24px;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.47; /* typography.body line-height */
+}
+
 /* GLASSMORPHISM & MODERN UI */
 * {
     -webkit-tap-highlight-color: transparent;
@@ -633,18 +667,18 @@ if ($selected_peserta_id > 0) {
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+    background: var(--colors-canvas-parchment); /* Parchment */
     background-attachment: fixed;
-    color: #334155;
+    color: var(--colors-ink); /* Near-Black Ink */
     min-height: 100vh;
 }
 
 /* Glassmorphism Card */
 .glass-card {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--colors-canvas);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    border: 1px solid var(--colors-hairline);
     border-radius: 1.5rem;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -657,12 +691,12 @@ body {
 }
 
 /* Modern Input Style */
-.modern-input, .modern-select {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(203, 213, 225, 0.6);
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
-    border-radius: 0.875rem;
+.apple-input, .apple-select {
+    background: var(--colors-canvas);
+    border: 1px solid var(--colors-hairline);
+    border-radius: 8px; /* rounded.sm */
+    padding: 0.6rem 0.8rem; /* typography.caption */
+    font-size: 0.875rem; /* typography.caption */
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
@@ -670,12 +704,12 @@ body {
 .modern-input:focus, .modern-select:focus {
     border-color: rgba(59, 130, 246, 0.5);
     outline: none;
-    background: rgba(255, 255, 255, 1);
+    background: var(--colors-canvas);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .modern-input:hover, .modern-select:hover {
-    border-color: rgba(148, 163, 184, 0.8);
+    border-color: var(--colors-primary);
 }
 
 /* Modern Button Styles */
@@ -701,12 +735,12 @@ body {
 }
 
 .btn-soft {
-    background: rgba(241, 245, 249, 0.8);
-    border: 1px solid rgba(203, 213, 225, 0.6);
-    color: #475569;
-    border-radius: 1rem;
-    padding: 0.625rem 1.25rem;
-    font-size: 0.875rem;
+    background: var(--colors-surface-pearl); /* Pearl Button */
+    border: 1px solid var(--colors-hairline);
+    color: var(--colors-ink-muted-80);
+    border-radius: 11px; /* rounded.md */
+    padding: 0.625rem 1.25rem; /* Adjusted padding */
+    font-size: 0.875rem; /* typography.caption */
     transition: all 0.2s ease;
 }
 
@@ -715,47 +749,44 @@ body {
     border-color: rgba(148, 163, 184, 0.8);
 }
 
-.btn-soft-success {
-    background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-    color: white;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
-.btn-soft-success:hover {
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
-}
-
-.btn-soft-danger {
-    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-    color: white;
-    border: none;
-    border-radius: 1rem;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
-}
-
-.btn-soft-danger:hover {
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
-}
-
 /* Badge Styles - Colorful */
 .badge-success {
-    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
-    color: #166534;
-    border: 1px solid #86efac;
+    background: var(--badge-success-bg);
+    color: var(--badge-success-text);
+    border: 1px solid var(--badge-success-bg);
+}
+
+.btn-apple-primary { /* Primary Action Blue button */
+    background-color: var(--colors-primary);
+    border: none;
+    color: var(--colors-canvas);
+    padding: 0.75rem 1.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 9999px; /* rounded.pill */
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
+}
+
+.btn-apple-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 102, 204, 0.5);
+}
+
+.btn-apple-primary:active {
+    transform: scale(0.95);
 }
 
 .badge-warning {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    color: #92400e;
-    border: 1px solid #fcd34d;
+    background: var(--badge-warning-bg);
+    color: var(--badge-warning-text);
+    border: 1px solid var(--badge-warning-bg);
 }
 
 .badge-danger {
-    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-    color: #991b1b;
-    border: 1px solid #fca5a5;
+    background: var(--badge-danger-bg);
+    color: var(--badge-danger-text);
+    border: 1px solid var(--badge-danger-bg);
 }
 
 .table-header {
@@ -844,7 +875,7 @@ hr.soft {
 <div class="max-w-7xl mx-auto">
 
 <!-- Modern Header -->
-<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" style="letter-spacing: -0.02em;">
     <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
             <i class="fas fa-book-quran text-lg"></i>
@@ -862,7 +893,7 @@ hr.soft {
 
 <!-- Alert Messages - Modern Style -->
 <?php if (!empty($message)): ?>
-<div class="mb-6 px-5 py-4 rounded-2xl border text-sm animate-slide-up <?= 
+<div class="mb-6 px-5 py-4 glass-card border-l-4 text-sm animate-slide-up <?= 
     $message_type === 'success' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-800' : 
     ($message_type === 'error' ? 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200 text-red-800' : 
     'bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200 text-amber-800') ?>">
@@ -877,7 +908,7 @@ hr.soft {
 <?php if ($selected_peserta_id > 0): ?>
 <div class="mb-7 flex justify-end">
     <a href="manzil-report.php?peserta_id=<?= $selected_peserta_id ?>"
-        class="inline-flex items-center px-5 py-2.5 btn-soft text-sm border transition-all hover:shadow-md">
+        class="inline-flex items-center px-5 py-2.5 btn-apple-primary text-sm">
         <i class="fas fa-chart-simple mr-2 text-xs"></i> Laporan Mingguan
     </a>
 </div>
@@ -886,25 +917,25 @@ hr.soft {
 <!-- Kelola Santri - Glass Card -->
 <div class="glass-card mb-7 p-5 animate-slide-up">
     <div class="flex items-center gap-2 mb-4">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
             <i class="fas fa-users text-xs"></i>
         </div>
-        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
+        <span class="text-sm font-medium text-gray-700 tracking-wide" style="letter-spacing: -0.02em;">KELOLA SANTRI</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Tambah Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
             <input type="text" name="nama_baru"
-                class="flex-1 modern-input text-sm"
-                placeholder="Nama santri baru..." required>
+                class="flex-1 apple-input text-sm"
+                placeholder="Nama santri baru" required>
             <button type="submit" name="tambah_peserta"
-                class="px-4 btn-soft-success text-sm flex items-center justify-center whitespace-nowrap">
-                <i class="fas fa-plus mr-1 text-xs"></i> Tambah
+                class="px-4 btn-apple-primary text-sm flex items-center justify-center whitespace-nowrap">
+                <i class="fas fa-plus mr-1 text-xs"></i> Tambah Santri
             </button>
         </form>
         <!-- Hapus Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
-            <select name="peserta_id_hapus" class="flex-1 modern-select text-sm" required>
+            <select name="peserta_id_hapus" class="flex-1 apple-select text-sm" required>
                 <option value="">-- Pilih santri untuk dihapus --</option>
                 <?php foreach ($peserta_list as $peserta): ?>
                 <option value="<?= $peserta['id'] ?>"><?= htmlspecialchars($peserta['nama']) ?></option>
@@ -912,7 +943,7 @@ hr.soft {
             </select>
             <button type="submit" name="hapus_peserta"
                 class="px-4 btn-soft-danger text-sm flex items-center justify-center whitespace-nowrap"
-                onclick="return confirm('Yakin ingin menghapus santri ini?')">
+                onclick="return confirm('Yakin ingin menghapus santri ini? Ini akan menonaktifkan santri.')">
                 <i class="fas fa-trash-alt mr-1 text-xs"></i> Hapus
             </button>
         </form>
@@ -922,11 +953,11 @@ hr.soft {
 <!-- Form Input Muroja'ah - Glass Card -->
 <div class="glass-card p-5 animate-slide-up" style="animation-delay: 0.1s">
     <div class="flex items-center gap-2 mb-5">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
             <i class="fas fa-pen-to-square text-xs"></i>
         </div>
-        <span class="text-sm font-medium text-gray-700 tracking-wide">INPUT MUROJA'AH · MINGGU INI</span>
-    </div>
+        <span class="text-sm font-medium text-gray-700 tracking-wide" style="letter-spacing: -0.02em;">INPUT MUROJA'AH · MINGGU INI</span>
+    </div> 
     <form method="POST" action="" id="form-murojaah">
         <!-- Pilih Santri -->
         <div class="mb-6 max-w-md">
@@ -943,7 +974,7 @@ hr.soft {
 
         <!-- Tabel Muroja'ah Harian - Responsive -->
         <div class="overflow-x-auto responsive-table">
-            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden">
+            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden" style="border-radius: 18px;">
                 <thead class="table-header">
                     <tr>
                         <th class="px-4 py-3 text-left font-semibold">Hari</th>
@@ -966,7 +997,7 @@ hr.soft {
                         <td class="px-4 py-3 text-gray-500 text-xs whitespace-nowrap"><?= $tanggal_tampil ?></td>
                         <td class="px-4 py-3 text-center">
                             <select name="hari[<?= $key ?>][jumlah]"
-                                class="jumlah-juz w-20 modern-select text-xs py-2 px-2"
+                                class="jumlah-juz w-20 apple-select text-xs py-2 px-2"
                                 data-hari="<?= $key ?>">
                                 <?php for($j=0;$j<=5;$j++): ?>
                                 <option value="<?= $j ?>"><?= $j ?></option>
@@ -994,7 +1025,7 @@ hr.soft {
         <!-- Tombol Simpan -->
         <div class="flex justify-center">
             <button type="submit" name="simpan_murojaah"
-                class="px-10 py-3 btn-modern text-sm tracking-wide flex items-center shadow-lg">
+                class="px-10 py-3 btn-apple-primary text-sm tracking-wide flex items-center">
                 <i class="fas fa-check mr-2 text-xs"></i> SIMPAN DATA
             </button>
         </div>
@@ -1019,12 +1050,12 @@ hr.soft {
 <!-- Modal Edit - Modern Style -->
 <div id="editModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 animate-fade-in">
     <div class="bg-gradient-to-br from-white/95 to-gray-50/95 border border-white/40 rounded-3xl max-w-md w-full p-6 shadow-2xl">
-        <div class="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200/60">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white">
+        <div class="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200/60" style="letter-spacing: -0.02em;">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
                 <i class="fas fa-pencil-alt text-xs"></i>
             </div>
-            <span class="text-sm font-medium text-gray-700 tracking-wide">EDIT DATA MUROJA'AH</span>
-        </div>
+            <span class="text-sm font-medium text-gray-700 tracking-wide">EDIT DATA MUROJA'AH</span> 
+        </div> 
         <form method="POST" action="" id="form-edit">
             <input type="hidden" id="edit_id" name="edit_id">
             <div class="mb-4">
@@ -1038,13 +1069,13 @@ hr.soft {
             <div class="grid grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-medium">Ketuk</label>
-                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0"
-                        class="w-full modern-input text-sm text-center font-medium" required>
+                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0" 
+                        class="w-full modern-input text-sm text-center font-medium apple-input" required>
                 </div>
                 <div>
                     <label class="block text-xs text-gray-500 mb-2 font-medium">Tuntun</label>
-                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0"
-                        class="w-full modern-input text-sm text-center font-medium">
+                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0" 
+                        class="w-full modern-input text-sm text-center font-medium apple-input">
                 </div>
             </div>
             <div class="mb-5">
@@ -1054,11 +1085,11 @@ hr.soft {
             </div>
             <div class="flex gap-3">
                 <button type="button" onclick="closeEditModal()"
-                    class="flex-1 px-4 py-2.5 border border-gray-200/60 text-gray-600 text-sm hover:bg-gray-100/80 rounded-xl transition-colors">
+                    class="flex-1 px-4 py-2.5 btn-soft text-sm">
                     Batal
                 </button>
                 <button type="submit" name="edit_data"
-                    class="flex-1 px-4 py-2.5 btn-modern text-sm flex items-center justify-center">
+                    class="flex-1 px-4 py-2.5 btn-apple-primary text-sm flex items-center justify-center">
                     <i class="fas fa-check mr-2 text-xs"></i> Simpan
                 </button>
             </div>
@@ -1068,7 +1099,7 @@ hr.soft {
 
 <!-- Footer -->
 <div class="mt-10 text-center">
-    <p class="text-xs text-gray-400 tracking-wide">
+    <p class="text-xs text-gray-400 tracking-wide" style="letter-spacing: -0.02em;">
         <i class="fas fa-circle mr-1 text-[5px] align-middle text-blue-400"></i>
         Reqra by Han · <?= date('Y') ?> · <span class="text-gray-300">|</span> Muroja'ah System
     </p>
