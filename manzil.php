@@ -190,68 +190,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_peserta']) && 
 // ==========================================
 // 7. PROSES SIMPAN MUROJAAH
 // ==========================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_murojaah']) && !$is_ajax) {
-    $peserta_id = (int)($_POST['peserta_id'] ?? 0);
-    if ($peserta_id <= 0) {
-        $message = 'Pilih santri terlebih dahulu!';
-        $message_type = 'error';
-    } else {
-        $success_count = 0;
-        $error_count = 0;
-        $hari_list = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-        
-        foreach ($hari_list as $hari) {
-            $jumlah_juz = isset($_POST['hari'][$hari]['jumlah']) ? (int)$_POST['hari'][$hari]['jumlah'] : 0;
-            if ($jumlah_juz > 0 && $jumlah_juz <= 5) {
-                $hari_map = [
-                    'senin' => 'monday', 'selasa' => 'tuesday', 'rabu' => 'wednesday',
-                    'kamis' => 'thursday', 'jumat' => 'friday', 'sabtu' => 'saturday', 'minggu' => 'sunday'
-                ];
-                $tanggal = date('Y-m-d', strtotime($hari_map[$hari] . ' this week'));
-                
-                for ($juz_ke = 1; $juz_ke <= $jumlah_juz; $juz_ke++) {
-                    $juz = (int)($_POST['hari'][$hari]["juz_{$juz_ke}"] ?? 0);
-                    $ketuk = isset($_POST['hari'][$hari]["ketuk_{$juz_ke}"]) ? (int)$_POST['hari'][$hari]["ketuk_{$juz_ke}"] : 0;
-                    $tuntun = isset($_POST['hari'][$hari]["tuntun_{$juz_ke}"]) ? (int)$_POST['hari'][$hari]["tuntun_{$juz_ke}"] : 0;
-                    $catatan = trim($_POST['hari'][$hari]["catatan_{$juz_ke}"] ?? '');
-                    
-                    if ($juz >= 1 && $juz <= 30 && $tanggal) {
-                        $stmt_check = $conn->prepare("SELECT id FROM manzil_data WHERE peserta_id = ? AND tanggal = ? AND juz = ? AND juz_ke = ?");
-                        $stmt_check->bind_param("issi", $peserta_id, $tanggal, $juz, $juz_ke);
-                        $stmt_check->execute();
-                        $result_check = $stmt_check->get_result();
-                        
-                        if ($result_check->num_rows > 0) {
-                            $row = $result_check->fetch_assoc();
-                            $stmt_update = $conn->prepare("UPDATE manzil_data SET ketuk = ?, tuntun = ?, catatan = ? WHERE id = ?");
-                            $stmt_update->bind_param("iisi", $ketuk, $tuntun, $catatan, $row['id']);
-                            if ($stmt_update->execute()) $success_count++;
-                            else $error_count++;
-                            $stmt_update->close();
-                        } else {
-                            $stmt_insert = $conn->prepare("INSERT INTO manzil_data (peserta_id, tanggal, juz, juz_ke, ketuk, tuntun, catatan) VALUES (?, ?, ?, ?, ?, ?, ?)");
-                            $stmt_insert->bind_param("issiiis", $peserta_id, $tanggal, $juz, $juz_ke, $ketuk, $tuntun, $catatan);
-                            if ($stmt_insert->execute()) $success_count++;
-                            else $error_count++;
-                            $stmt_insert->close();
-                        }
-                        $stmt_check->close();
-                    }
-                }
-            }
-        }
-        
-        if ($success_count > 0) {
-            $message = "Data berhasil disimpan! ($success_count data berhasil)";
-            $message_type = 'success';
-            updateRangkumanMingguan($conn, $peserta_id, $minggu_ini, $tahun_ini);
-        } else {
-            $message = "Tidak ada data yang disimpan!";
-            $message_type = 'warning';
-        }
-        header("Location: " . $_SERVER['PHP_SELF'] . "?peserta_id=" . $peserta_id);
-        exit;
-    }
+$status = $_POST['hari'][$hari]["status_{$juz_ke}"] ?? 'lancar';
+
+if ($status == 'tidak') {
+    $ketuk = 5; $tuntun = 4; // Skor buruk
+} elseif ($status == 'cukup') {
+    $ketuk = 4; $tuntun = 3; // Skor menengah
+} else {
+    $ketuk = 0; $tuntun = 0; // Lancar
 }
 
 // ==========================================
@@ -1175,21 +1121,23 @@ document.addEventListener('DOMContentLoaded', function() {
             let html = `<div class="space-y-2.5 max-w-lg">`;
             for (let i = 1; i <= jumlah; i++) {
                 html += `
-                <div class="flex flex-wrap items-center gap-2 p-3 bg-white/60 border border-gray-200/60 rounded-lg backdrop-blur-sm">
-                    <span class="text-[11px] text-blue-600 font-medium min-w-[32px] bg-blue-50 px-2 py-1 rounded-lg">J${i}</span>
-                    <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
-                        class="flex-1 min-w-[90px] modern-input text-xs py-2 px-3 apple-input" 
-                        placeholder="No. Juz" required>
-                    <datalist id="juzList-${hari}-${i}">
-                        ${generateJuzOptions()}
-                    </datalist>
-                    <input type="number" name="hari[${hari}][ketuk_${i}]" min="0" max="10" value="0" placeholder="K"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center apple-input" title="Jumlah Ketuk">
-                    <input type="number" name="hari[${hari}][tuntun_${i}]" min="0" max="10" value="0" placeholder="T"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center apple-input" title="Jumlah Tuntun">
-                    <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan"
-                        class="flex-1 min-w-[120px] modern-input text-xs py-2 px-3 apple-input">
-                </div>`;
+                <div class="flex flex-col gap-2 p-3 bg-white/60 border border-gray-200/60 rounded-lg backdrop-blur-sm">
+    <div class="flex items-center gap-2">
+        <span class="text-[11px] text-blue-600 font-medium min-w-[32px] bg-blue-50 px-2 py-1 rounded-lg">J${i}</span>
+        <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
+            class="flex-1 modern-input text-xs py-2 px-3" placeholder="Juz" required>
+        <datalist id="juzList-${hari}-${i}">${generateJuzOptions()}</datalist>
+    </div>
+    <div class="flex items-center gap-2">
+        <select name="hari[${hari}][status_${i}]" class="flex-1 modern-select text-xs py-2 px-2 status-select">
+            <option value="lancar">Lancar</option>
+            <option value="cukup">Cukup</option>
+            <option value="tidak">Tidak Lancar</option>
+        </select>
+        <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan..."
+            class="flex-1 modern-input text-xs py-2 px-3">
+    </div>
+</div>`;
             }
             html += `</div>`;
             container.innerHTML = html;
