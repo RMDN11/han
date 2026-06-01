@@ -11,8 +11,7 @@ $minggu_ini = date('W');
 $tahun_ini = date('Y');
 
 // CEK APAKAH INI REQUEST AJAX UNTUK LOAD DATA
-$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
-    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+$is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
 
 // ==========================================
 // 1. PROSES HAPUS SANTRI (Non-Aktifkan)
@@ -63,50 +62,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_per_tanggal']) 
 }
 
 // ==========================================
-// 3. PROSES HAPUS DATA MUROJAAH (SINGLE ID)
-// ==========================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_data']) && !$is_ajax) {
-    $delete_id = (int)$_POST['delete_id'];
-    if ($delete_id > 0) {
-        $stmt_get = $conn->prepare("SELECT peserta_id, tanggal FROM manzil_data WHERE id = ?");
-        $stmt_get->bind_param("i", $delete_id);
-        $stmt_get->execute();
-        $result_get = $stmt_get->get_result();
-        $record_info = $result_get->fetch_assoc();
-        $stmt_get->close();
-        
-        if ($record_info) {
-            $peserta_id_for_update = $record_info['peserta_id'];
-            $tanggal = $record_info['tanggal'];
-            $minggu_ke = date('W', strtotime($tanggal));
-            $tahun_for_update = date('Y', strtotime($tanggal));
-            
-            $stmt = $conn->prepare("DELETE FROM manzil_data WHERE id = ?");
-            $stmt->bind_param("i", $delete_id);
-            if ($stmt->execute()) {
-                $message = "Data berhasil dihapus!";
-                $message_type = 'success';
-                updateRangkumanMingguan($conn, $peserta_id_for_update, $minggu_ke, $tahun_for_update);
-            } else {
-                $message = "Gagal menghapus data!";
-                $message_type = 'error';
-            }
-            $stmt->close();
-            header("Location: " . $_SERVER['PHP_SELF'] . "?peserta_id=" . $peserta_id_for_update);
-            exit;
-        }
-    }
-}
-
-// ==========================================
-// 4. PROSES EDIT DATA MUROJAAH
+// 3. PROSES EDIT DATA MUROJAAH
 // ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_data']) && !$is_ajax) {
     $edit_id = (int)$_POST['edit_id'];
     $juz = (int)$_POST['edit_juz'];
-    $ketuk = (int)$_POST['edit_ketuk'];
-    $tuntun = (int)$_POST['edit_tuntun'];
+    $status = $_POST['edit_status'] ?? 'lancar';
     $catatan = trim($_POST['edit_catatan'] ?? '');
+    
+    // Konversi status ke angka di balik layar
+    if ($status == 'tidak') { $ketuk = 5; $tuntun = 4; } 
+    elseif ($status == 'cukup') { $ketuk = 4; $tuntun = 3; } 
+    else { $ketuk = 0; $tuntun = 0; }
     
     if ($edit_id > 0 && $juz >= 1 && $juz <= 30) {
         $stmt = $conn->prepare("UPDATE manzil_data SET juz = ?, ketuk = ?, tuntun = ?, catatan = ? WHERE id = ?");
@@ -118,86 +85,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_data']) && !$is_
             $stmt_get = $conn->prepare("SELECT peserta_id, tanggal FROM manzil_data WHERE id = ?");
             $stmt_get->bind_param("i", $edit_id);
             $stmt_get->execute();
-            $result_get = $stmt_get->get_result();
-            $record_info = $result_get->fetch_assoc();
-            $stmt_get->close();
-            
-            if ($record_info) {
+            if ($record_info = $stmt_get->get_result()->fetch_assoc()) {
                 $peserta_id_for_update = $record_info['peserta_id'];
                 $tanggal = $record_info['tanggal'];
-                $minggu_ke = date('W', strtotime($tanggal));
-                $tahun_for_update = date('Y', strtotime($tanggal));
-                updateRangkumanMingguan($conn, $peserta_id_for_update, $minggu_ke, $tahun_for_update);
+                updateRangkumanMingguan($conn, $peserta_id_for_update, date('W', strtotime($tanggal)), date('Y', strtotime($tanggal)));
             }
-        } else {
-            $message = "Gagal mengupdate data!";
-            $message_type = 'error';
         }
-        $stmt->close();
-        header("Location: " . $_SERVER['PHP_SELF'] . "?peserta_id=" . ($record_info['peserta_id'] ?? $selected_peserta_id));
+        header("Location: " . $_SERVER['PHP_SELF'] . "?peserta_id=" . ($peserta_id_for_update ?? ''));
         exit;
     }
 }
 
 // ==========================================
-// 5. AMBIL DAFTAR SANTRI
-// ==========================================
-$peserta_list = [];
-try {
-    $query_peserta = "SELECT id, nama FROM peserta_manzil WHERE aktif = 1 ORDER BY nama ASC";
-    $result_peserta = $conn->query($query_peserta);
-    while ($row = $result_peserta->fetch_assoc()) {
-        $peserta_list[] = $row;
-    }
-} catch (Exception $e) {
-    // Tabel belum ada
-}
-
-// ==========================================
-// 6. PROSES TAMBAH SANTRI
+// 4. PROSES TAMBAH SANTRI
 // ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_peserta']) && !$is_ajax) {
     $nama_baru = trim($_POST['nama_baru'] ?? '');
     if (!empty($nama_baru)) {
-        $stmt_check = $conn->prepare("SELECT id FROM peserta_manzil WHERE nama = ?");
-        $stmt_check->bind_param("s", $nama_baru);
-        $stmt_check->execute();
-        $result_check = $stmt_check->get_result();
-        if ($result_check->num_rows > 0) {
-            $message = "Santri dengan nama tersebut sudah ada!";
-            $message_type = 'warning';
-        } else {
-            $stmt = $conn->prepare("INSERT INTO peserta_manzil (nama, aktif) VALUES (?, 1)");
-            $stmt->bind_param("s", $nama_baru);
-            if ($stmt->execute()) {
-                $message = "Santri berhasil ditambahkan!";
-                $message_type = 'success';
-            } else {
-                $message = "Gagal menambahkan santri: " . $stmt->error;
-                $message_type = 'error';
-            }
-            $stmt->close();
-        }
-        $stmt_check->close();
+        $stmt = $conn->prepare("INSERT INTO peserta_manzil (nama, aktif) VALUES (?, 1)");
+        $stmt->bind_param("s", $nama_baru);
+        $stmt->execute();
         header("Location: " . $_SERVER['PHP_SELF']);
         exit;
-    } else {
-        $message = "Nama santri tidak boleh kosong!";
-        $message_type = 'error';
     }
 }
 
 // ==========================================
-// 7. PROSES SIMPAN MUROJAAH
+// 5. PROSES SIMPAN MUROJAAH (BULK HARI)
 // ==========================================
-$status = $_POST['hari'][$hari]["status_{$juz_ke}"] ?? 'lancar';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan_murojaah']) && !$is_ajax) {
+    $peserta_id = (int)$_POST['peserta_id'];
+    if ($peserta_id > 0 && isset($_POST['hari'])) {
+        $hari_map = ['senin'=>'monday','selasa'=>'tuesday','rabu'=>'wednesday','kamis'=>'thursday','jumat'=>'friday','sabtu'=>'saturday','minggu'=>'sunday'];
+        $minggu_update = $tahun_update = null;
 
-if ($status == 'tidak') {
-    $ketuk = 5; $tuntun = 4; // Skor buruk
-} elseif ($status == 'cukup') {
-    $ketuk = 4; $tuntun = 3; // Skor menengah
-} else {
-    $ketuk = 0; $tuntun = 0; // Lancar
+        foreach ($_POST['hari'] as $hari_key => $data_hari) {
+            $jumlah = (int)($data_hari['jumlah'] ?? 0);
+            if ($jumlah > 0) {
+                $tanggal = date('Y-m-d', strtotime($hari_map[$hari_key] . ' this week'));
+                $minggu_update = date('W', strtotime($tanggal));
+                $tahun_update = date('Y', strtotime($tanggal));
+                
+                // Hapus data lama hari ini untuk reset (opsional agar tidak dobel)
+                $stmt_del = $conn->prepare("DELETE FROM manzil_data WHERE peserta_id = ? AND tanggal = ?");
+                $stmt_del->bind_param("is", $peserta_id, $tanggal);
+                $stmt_del->execute();
+                
+                $stmt = $conn->prepare("INSERT INTO manzil_data (peserta_id, tanggal, juz, juz_ke, ketuk, tuntun, catatan) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                
+                for ($i = 1; $i <= $jumlah; $i++) {
+                    $juz = (int)($data_hari["juz_$i"] ?? 0);
+                    $status = $data_hari["status_$i"] ?? 'lancar';
+                    $catatan = trim($data_hari["catatan_$i"] ?? '');
+                    
+                    if ($juz > 0) {
+                        // Terjemahkan status ke angka di balik layar
+                        if ($status == 'tidak') { $ketuk = 5; $tuntun = 4; } 
+                        elseif ($status == 'cukup') { $ketuk = 4; $tuntun = 3; } 
+                        else { $ketuk = 0; $tuntun = 0; }
+                        
+                        $stmt->bind_param("isiiiis", $peserta_id, $tanggal, $juz, $i, $ketuk, $tuntun, $catatan);
+                        $stmt->execute();
+                    }
+                }
+            }
+        }
+        if ($minggu_update) {
+            updateRangkumanMingguan($conn, $peserta_id, $minggu_update, $tahun_update);
+        }
+        header("Location: " . $_SERVER['PHP_SELF'] . "?peserta_id=" . $peserta_id);
+        exit;
+    }
 }
 
 // ==========================================
@@ -207,17 +165,7 @@ function updateRangkumanMingguan($conn, $peserta_id, $minggu_ke, $tahun) {
     $tanggal_awal = date('Y-m-d', strtotime($tahun . 'W' . str_pad($minggu_ke, 2, '0', STR_PAD_LEFT) . '-1'));
     $tanggal_akhir = date('Y-m-d', strtotime($tanggal_awal . ' +6 days'));
     
-    $stmt = $conn->prepare("
-    SELECT
-    COUNT(DISTINCT juz) as total_juz,
-    COUNT(*) as total_murojaah,
-    SUM(ketuk) as total_ketuk,
-    SUM(tuntun) as total_tuntun
-    FROM manzil_data
-    WHERE peserta_id = ?
-    AND tanggal >= ?
-    AND tanggal <= ?
-    ");
+    $stmt = $conn->prepare("SELECT COUNT(DISTINCT juz) as total_juz, COUNT(*) as total_murojaah, SUM(ketuk) as total_ketuk, SUM(tuntun) as total_tuntun FROM manzil_data WHERE peserta_id = ? AND tanggal >= ? AND tanggal <= ?");
     $stmt->bind_param("iss", $peserta_id, $tanggal_awal, $tanggal_akhir);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -231,24 +179,15 @@ function updateRangkumanMingguan($conn, $peserta_id, $minggu_ke, $tahun) {
         $avg_ketuk = $total_murojaah > 0 ? $total_ketuk / $total_murojaah : 0;
         $avg_tuntun = $total_murojaah > 0 ? $total_tuntun / $total_murojaah : 0;
         
-        // LOGIKA KUALITAS BARU: Patokan nilai terbesar antara ketuk & tuntun
+        // LOGIKA KUALITAS
         $ketuk_score = 0;
-        if ($avg_ketuk > 4) $ketuk_score = 2;      // Tidak Lancar
-        elseif ($avg_ketuk > 3) $ketuk_score = 1;   // Cukup
+        if ($avg_ketuk > 4) $ketuk_score = 2; elseif ($avg_ketuk > 3) $ketuk_score = 1;
         
         $tuntun_score = 0;
-        if ($avg_tuntun > 3) $tuntun_score = 2;    // Tidak Lancar
-        elseif ($avg_tuntun > 2) $tuntun_score = 1; // Cukup
+        if ($avg_tuntun > 3) $tuntun_score = 2; elseif ($avg_tuntun > 2) $tuntun_score = 1;
         
         $final_score = max($ketuk_score, $tuntun_score);
-        
-        if ($final_score === 2) {
-            $kualitas = 'Tidak Lancar';
-        } elseif ($final_score === 1) {
-            $kualitas = 'Cukup';
-        } else {
-            $kualitas = 'Lancar';
-        }
+        $kualitas = ($final_score === 2) ? 'Tidak Lancar' : (($final_score === 1) ? 'Cukup' : 'Lancar');
         
         $stmt_check = $conn->prepare("SELECT id FROM manzil_rangkuman WHERE peserta_id = ? AND minggu_ke = ? AND tahun = ?");
         $stmt_check->bind_param("iii", $peserta_id, $minggu_ke, $tahun);
@@ -257,270 +196,108 @@ function updateRangkumanMingguan($conn, $peserta_id, $minggu_ke, $tahun) {
         
         if ($result_check->num_rows > 0) {
             $row_check = $result_check->fetch_assoc();
-            $stmt_update = $conn->prepare("UPDATE manzil_rangkuman SET total_juz = ?, total_murojaah = ?, rata_ketuk = ?, rata_tuntun = ?, kualitas = ? WHERE id = ?");
+            $stmt_update = $conn->prepare("UPDATE manzil_rangkuman SET total_juz=?, total_murojaah=?, rata_ketuk=?, rata_tuntun=?, kualitas=? WHERE id=?");
             $stmt_update->bind_param("iiddsi", $total_juz, $total_murojaah, $total_ketuk, $total_tuntun, $kualitas, $row_check['id']);
             $stmt_update->execute();
-            $stmt_update->close();
         } else {
             $stmt_insert = $conn->prepare("INSERT INTO manzil_rangkuman (peserta_id, minggu_ke, tahun, total_juz, total_murojaah, rata_ketuk, rata_tuntun, kualitas) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt_insert->bind_param("iiiiidds", $peserta_id, $minggu_ke, $tahun, $total_juz, $total_murojaah, $total_ketuk, $total_tuntun, $kualitas);
             $stmt_insert->execute();
-            $stmt_insert->close();
         }
-        $stmt_check->close();
     }
-    $stmt->close();
 }
 
 // ==========================================
-// AJAX GET HISTORY
+// AMBIL DAFTAR SANTRI
 // ==========================================
-if ($is_ajax && isset($_GET['action']) && $_GET['action'] === 'get_history') {
-    $peserta_id = (int)$_GET['peserta_id'];
-    $response = ['success' => false, 'data' => [], 'html' => ''];
-    
-    if ($peserta_id > 0) {
-        $tanggal_awal_minggu = date('Y-m-d', strtotime('monday this week'));
-        $tanggal_akhir_minggu = date('Y-m-d', strtotime('sunday this week'));
-        
-        $stmt_history = $conn->prepare("
-        SELECT id, tanggal, DAYNAME(tanggal) as hari, juz, juz_ke, ketuk, tuntun, catatan
-        FROM manzil_data
-        WHERE peserta_id = ? AND tanggal >= ? AND tanggal <= ?
-        ORDER BY tanggal ASC, juz_ke ASC
-        ");
-        $stmt_history->bind_param("iss", $peserta_id, $tanggal_awal_minggu, $tanggal_akhir_minggu);
-        $stmt_history->execute();
-        $result_history = $stmt_history->get_result();
-        $raw_data = [];
-        while ($row = $result_history->fetch_assoc()) {
-            $raw_data[] = $row;
-        }
-        $stmt_history->close();
-        
-        $grouped_data = [];
-        foreach ($raw_data as $item) {
-            $tanggal = $item['tanggal'];
-            if (!isset($grouped_data[$tanggal])) {
-                $grouped_data[$tanggal] = [
-                    'tanggal' => $tanggal,
-                    'hari' => $item['hari'],
-                    'total_juz' => 0,
-                    'juz_list' => [],
-                    'total_ketuk' => 0,
-                    'total_tuntun' => 0,
-                    'catatan_list' => [],
-                    'ids' => []
-                ];
-            }
-            $grouped_data[$tanggal]['total_juz']++;
-            $grouped_data[$tanggal]['juz_list'][] = $item['juz'];
-            $grouped_data[$tanggal]['total_ketuk'] += $item['ketuk'];
-            $grouped_data[$tanggal]['total_tuntun'] += $item['tuntun'];
-            if (!empty($item['catatan'])) {
-                $grouped_data[$tanggal]['catatan_list'][] = "J{$item['juz']}: {$item['catatan']}";
-            }
-            $grouped_data[$tanggal]['ids'][] = $item['id'];
-        }
-        
-        $history_grouped = [];
-        foreach ($grouped_data as $tanggal => $group) {
-            $juz_list_unique = array_unique($group['juz_list']);
-            sort($juz_list_unique);
-            
-            $avg_ketuk = $group['total_juz'] > 0 ? $group['total_ketuk'] / $group['total_juz'] : 0;
-            $avg_tuntun = $group['total_juz'] > 0 ? $group['total_tuntun'] / $group['total_juz'] : 0;
-            
-            // LOGIKA KUALITAS BARU
-            $ketuk_score = 0;
-            if ($avg_ketuk > 4) $ketuk_score = 2;
-            elseif ($avg_ketuk > 3) $ketuk_score = 1;
-            
-            $tuntun_score = 0;
-            if ($avg_tuntun > 3) $tuntun_score = 2;
-            elseif ($avg_tuntun > 2) $tuntun_score = 1;
-            
-            $final_score = max($ketuk_score, $tuntun_score);
-            
-            if ($final_score === 2) {
-                $kualitas = 'Tidak Lancar';
-                $badge_class = 'badge-tidak';
-                $icon_class = 'xmark';
-            } elseif ($final_score === 1) {
-                $kualitas = 'Cukup';
-                $badge_class = 'badge-cukup';
-                $icon_class = 'minus';
-            } else {
-                $kualitas = 'Lancar';
-                $badge_class = 'badge-lancar';
-                $icon_class = 'check';
-            }
-            
-            $history_grouped[] = [
-                'tanggal' => $group['tanggal'],
-                'hari' => $group['hari'],
-                'total_juz' => $group['total_juz'],
-                'juz_list' => implode(', ', $juz_list_unique),
-                'total_ketuk' => $group['total_ketuk'],
-                'total_tuntun' => $group['total_tuntun'],
-                'catatan' => implode('; ', $group['catatan_list']),
-                'kualitas' => $kualitas,
-                'badge_class' => $badge_class,
-                'icon_class' => $icon_class,
-                'sample_id' => $group['ids'][0]
-            ];
-        }
-        
-        $stmt_nama = $conn->prepare("SELECT nama FROM peserta_manzil WHERE id = ?");
-        $stmt_nama->bind_param("i", $peserta_id);
-        $stmt_nama->execute();
-        $result_nama = $stmt_nama->get_result();
-        if ($nama_row = $result_nama->fetch_assoc()) {
-            $response['nama_peserta'] = $nama_row['nama'];
-        }
-        $stmt_nama->close();
-        
-        $response['success'] = true;
-        $response['data'] = $history_grouped;
-        $response['html'] = generateHistoryGroupedHTML($history_grouped, $response['nama_peserta'] ?? 'Santri');
-    }
-    header('Content-Type: application/json');
-    echo json_encode($response);
-    exit;
+$peserta_list = [];
+$result_peserta = $conn->query("SELECT id, nama FROM peserta_manzil WHERE aktif = 1 ORDER BY nama ASC");
+if($result_peserta) {
+    while ($row = $result_peserta->fetch_assoc()) $peserta_list[] = $row;
 }
 
 // ==========================================
-// FUNCTION GENERATE HTML HISTORY
+// AJAX GET HISTORY & GENERATE HTML
 // ==========================================
-function generateHistoryGroupedHTML($history_data, $nama_peserta) {
-    if (empty($history_data)) {
-        return '<div class="glass-card p-6 text-center text-gray-400 text-sm italic">Belum ada data murojaah minggu ini</div>';
-    }
-    
-    $html = '
-    <div class="glass-card mt-7">
-    <div class="px-5 py-4 history-section flex items-center justify-between">
-    <div class="flex items-center gap-2">
-    <i class="fas fa-clock-rotate-left text-indigo-400 text-xs"></i>
-    <span class="text-sm font-medium text-gray-600 tracking-wide">
-    RIWAYAT · ' . htmlspecialchars($nama_peserta) . '
-    </span>
-    </div>
-    <button onclick="openHistoryModal()"
-    class="text-xs text-indigo-500 hover:text-indigo-700 border border-indigo-200 px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-sm">
-    <i class="fas fa-eye mr-1"></i> Preview Riwayat
-    </button>
-    </div>
-    </div>';
-    return $html;
-}
-
-// ==========================================
-// LOAD DATA INITIAL (NON-AJAX)
-// ==========================================
-$selected_peserta_id = isset($_GET['peserta_id']) ? (int)$_GET['peserta_id'] : 0;
-$history_grouped = [];
-$selected_peserta_nama = '';
-
-if ($selected_peserta_id > 0) {
+function getHistoryData($conn, $peserta_id) {
     $tanggal_awal_minggu = date('Y-m-d', strtotime('monday this week'));
     $tanggal_akhir_minggu = date('Y-m-d', strtotime('sunday this week'));
     
-    $stmt_history = $conn->prepare("
-    SELECT id, tanggal, DAYNAME(tanggal) as hari, juz, juz_ke, ketuk, tuntun, catatan
-    FROM manzil_data
-    WHERE peserta_id = ? AND tanggal >= ? AND tanggal <= ?
-    ORDER BY tanggal ASC, juz_ke ASC
-    ");
-    $stmt_history->bind_param("iss", $selected_peserta_id, $tanggal_awal_minggu, $tanggal_akhir_minggu);
-    $stmt_history->execute();
-    $result_history = $stmt_history->get_result();
+    $stmt = $conn->prepare("SELECT id, tanggal, DAYNAME(tanggal) as hari, juz, ketuk, tuntun, catatan FROM manzil_data WHERE peserta_id = ? AND tanggal >= ? AND tanggal <= ? ORDER BY tanggal ASC, juz_ke ASC");
+    $stmt->bind_param("iss", $peserta_id, $tanggal_awal_minggu, $tanggal_akhir_minggu);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $raw_data = [];
-    while ($row = $result_history->fetch_assoc()) {
-        $raw_data[] = $row;
-    }
-    $stmt_history->close();
+    while ($row = $result->fetch_assoc()) $raw_data[] = $row;
     
     $grouped_data = [];
     foreach ($raw_data as $item) {
         $tanggal = $item['tanggal'];
         if (!isset($grouped_data[$tanggal])) {
-            $grouped_data[$tanggal] = [
-                'tanggal' => $tanggal,
-                'hari' => $item['hari'],
-                'total_juz' => 0,
-                'juz_list' => [],
-                'total_ketuk' => 0,
-                'total_tuntun' => 0,
-                'catatan_list' => [],
-                'ids' => []
-            ];
+            $grouped_data[$tanggal] = ['tanggal' => $tanggal, 'hari' => $item['hari'], 'total_juz' => 0, 'juz_list' => [], 'total_ketuk' => 0, 'total_tuntun' => 0, 'catatan_list' => [], 'ids' => []];
         }
         $grouped_data[$tanggal]['total_juz']++;
         $grouped_data[$tanggal]['juz_list'][] = $item['juz'];
         $grouped_data[$tanggal]['total_ketuk'] += $item['ketuk'];
         $grouped_data[$tanggal]['total_tuntun'] += $item['tuntun'];
-        if (!empty($item['catatan'])) {
-            $grouped_data[$tanggal]['catatan_list'][] = "J{$item['juz']}: {$item['catatan']}";
-        }
+        if (!empty($item['catatan'])) $grouped_data[$tanggal]['catatan_list'][] = "J{$item['juz']}: {$item['catatan']}";
         $grouped_data[$tanggal]['ids'][] = $item['id'];
     }
     
-    foreach ($grouped_data as $tanggal => $group) {
+    $history_grouped = [];
+    foreach ($grouped_data as $group) {
         $juz_list_unique = array_unique($group['juz_list']);
         sort($juz_list_unique);
         
         $avg_ketuk = $group['total_juz'] > 0 ? $group['total_ketuk'] / $group['total_juz'] : 0;
         $avg_tuntun = $group['total_juz'] > 0 ? $group['total_tuntun'] / $group['total_juz'] : 0;
         
-        // LOGIKA KUALITAS BARU
-        $ketuk_score = 0;
-        if ($avg_ketuk > 4) $ketuk_score = 2;
-        elseif ($avg_ketuk > 3) $ketuk_score = 1;
+        $final_score = max(($avg_ketuk > 4 ? 2 : ($avg_ketuk > 3 ? 1 : 0)), ($avg_tuntun > 3 ? 2 : ($avg_tuntun > 2 ? 1 : 0)));
         
-        $tuntun_score = 0;
-        if ($avg_tuntun > 3) $tuntun_score = 2;
-        elseif ($avg_tuntun > 2) $tuntun_score = 1;
-        
-        $final_score = max($ketuk_score, $tuntun_score);
-        
-        if ($final_score === 2) {
-            $kualitas = 'Tidak Lancar';
-            $badge_class = 'badge-tidak';
-            $icon_class = 'xmark';
-        } elseif ($final_score === 1) {
-            $kualitas = 'Cukup';
-            $badge_class = 'badge-cukup';
-            $icon_class = 'minus';
-        } else {
-            $kualitas = 'Lancar';
-            $badge_class = 'badge-lancar';
-            $icon_class = 'check';
-        }
+        if ($final_score === 2) { $kualitas = 'Tidak Lancar'; $badge_class = 'badge-tidak'; $icon_class = 'xmark'; } 
+        elseif ($final_score === 1) { $kualitas = 'Cukup'; $badge_class = 'badge-cukup'; $icon_class = 'minus'; } 
+        else { $kualitas = 'Lancar'; $badge_class = 'badge-lancar'; $icon_class = 'check'; }
         
         $history_grouped[] = [
-            'tanggal' => $group['tanggal'],
-            'hari' => $group['hari'],
-            'total_juz' => $group['total_juz'],
-            'juz_list' => implode(', ', $juz_list_unique),
-            'total_ketuk' => $group['total_ketuk'],
-            'total_tuntun' => $group['total_tuntun'],
-            'catatan' => implode('; ', $group['catatan_list']),
-            'kualitas' => $kualitas,
-            'badge_class' => $badge_class,
-            'icon_class' => $icon_class,
-            'sample_id' => $group['ids'][0]
+            'tanggal' => $group['tanggal'], 'hari' => $group['hari'], 'total_juz' => $group['total_juz'],
+            'juz_list' => implode(', ', $juz_list_unique), 'catatan' => implode('; ', $group['catatan_list']),
+            'kualitas' => $kualitas, 'badge_class' => $badge_class, 'icon_class' => $icon_class, 'sample_id' => $group['ids'][0]
         ];
     }
+    return $history_grouped;
+}
+
+if ($is_ajax && isset($_GET['action']) && $_GET['action'] === 'get_history') {
+    $peserta_id = (int)$_GET['peserta_id'];
+    $response = ['success' => false, 'data' => [], 'html' => ''];
     
+    if ($peserta_id > 0) {
+        $history_grouped = getHistoryData($conn, $peserta_id);
+        
+        $stmt_nama = $conn->prepare("SELECT nama FROM peserta_manzil WHERE id = ?");
+        $stmt_nama->bind_param("i", $peserta_id);
+        $stmt_nama->execute();
+        $response['nama_peserta'] = $stmt_nama->get_result()->fetch_assoc()['nama'] ?? 'Santri';
+        
+        $response['success'] = true;
+        $response['data'] = $history_grouped;
+        
+        $html = '<div class="glass-card mt-7 animate-fade-in"><div class="px-5 py-4 history-section flex items-center justify-between"><div class="flex items-center gap-2"><i class="fas fa-clock-rotate-left text-indigo-400 text-xs"></i><span class="text-sm font-medium text-gray-600 tracking-wide">RIWAYAT · ' . htmlspecialchars($response['nama_peserta']) . '</span></div><button onclick="openHistoryModal()" class="text-xs text-indigo-500 hover:text-indigo-700 border border-indigo-200 px-4 py-2 bg-white/50 backdrop-blur-sm rounded-xl hover:bg-indigo-50 transition-all duration-200 shadow-sm"><i class="fas fa-eye mr-1"></i> Preview Riwayat</button></div></div>';
+        
+        $response['html'] = empty($history_grouped) ? '<div class="glass-card p-6 text-center text-gray-400 text-sm italic">Belum ada data murojaah minggu ini</div>' : $html;
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+$selected_peserta_id = isset($_GET['peserta_id']) ? (int)$_GET['peserta_id'] : 0;
+$selected_peserta_nama = '';
+if ($selected_peserta_id > 0) {
     $stmt_nama = $conn->prepare("SELECT nama FROM peserta_manzil WHERE id = ?");
     $stmt_nama->bind_param("i", $selected_peserta_id);
     $stmt_nama->execute();
-    $result_nama = $stmt_nama->get_result();
-    if ($row_nama = $result_nama->fetch_assoc()) {
-        $selected_peserta_nama = $row_nama['nama'];
-    }
-    $stmt_nama->close();
+    $selected_peserta_nama = $stmt_nama->get_result()->fetch_assoc()['nama'] ?? '';
 }
 ?>
 <!DOCTYPE html>
@@ -533,52 +310,19 @@ if ($selected_peserta_id > 0) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-/* Apple-inspired Design System Variables */
 :root {
-    /* Colors from DESIGN.md */
-    --colors-primary: #0066cc; /* Action Blue */
-    --colors-primary-focus: #0071e3;
-    --colors-primary-on-dark: #2997ff;
-    --colors-canvas: #ffffff; /* Pure White */
-    --colors-canvas-parchment: #f5f5f7; /* Parchment */
-    --colors-surface-pearl: #fafafc; /* Pearl Button */
-    --colors-ink: #1d1d1f; /* Near-Black Ink */
-    --colors-ink-muted-80: #333333;
-    --colors-ink-muted-48: #7a7a7a;
+    --colors-primary: #0066cc;
+    --colors-canvas: #ffffff;
+    --colors-canvas-parchment: #f5f5f7;
+    --colors-surface-pearl: #fafafc;
+    --colors-ink: #1d1d1f;
     --colors-hairline: #e0e0e0;
-
-    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
-    --badge-success-bg: #dcfce7; /* Light Green */
-    --badge-success-text: #166534; /* Dark Green */
-    --badge-danger-bg: #fee2e2; /* Light Red */
-    --badge-danger-text: #991b1b; /* Dark Red */
-    --badge-warning-bg: #fef3c7; /* Light Yellow */
-    --badge-warning-text: #92400e; /* Dark Yellow */
-
-    /* Spacing tokens (using 8px base unit) */
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
-    --spacing-lg: 24px;
-    --spacing-section: 80px;
-}
-
-body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    line-height: 1.47; /* typography.body line-height */
-}
-
-/* GLASSMORPHISM & MODERN UI */
-* {
-    -webkit-tap-highlight-color: transparent;
-    box-sizing: border-box;
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--colors-canvas-parchment); /* Parchment */
-    background-attachment: fixed;
-    color: var(--colors-ink); /* Near-Black Ink */
+    background: var(--colors-canvas-parchment);
+    color: var(--colors-ink);
     min-height: 100vh;
 }
 
@@ -586,245 +330,64 @@ body {
 .glass-card {
     background: var(--colors-canvas);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--colors-hairline);
     border-radius: 20px;
-    box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.08),
-        0 2px 8px rgba(148, 163, 184, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.04), 0 2px 8px rgba(148,163,184,0.08);
     transition: all 0.3s ease;
-}
-
-.glass-card:hover {
-    box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(148, 163, 184, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
-    transform: translateY(-2px);
 }
 
 /* Modern Inputs */
 .modern-input, .modern-select {
     background: var(--colors-canvas);
-    backdrop-filter: blur(8px);
     border: 1px solid var(--colors-hairline);
-    border-radius: 8px; /* rounded.sm */
-    padding: 0.6rem 0.8rem; /* typography.caption */
-    font-size: 0.875rem; /* typography.caption */
-    transition: all 0.2s ease;
-    color: var(--colors-ink);
-} 
-
-.modern-input:focus, .modern-select:focus {
-    outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    background: rgba(255, 255, 255, 0.95);
-}
-.modern-input:hover, .modern-select:hover {
-    border-color: #94a3b8;
-}
-
-/* Modern Buttons */
-/* btn-apple-primary equivalent */
-.btn-glass {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(79, 70, 229, 0.9));
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    padding: 0.6rem 0.8rem;
     font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 14px;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
-}
-
-.btn-glass:hover {
-    background: linear-gradient(135deg, rgba(79, 70, 229, 1), rgba(67, 56, 202, 1));
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
-}
-
-/* btn-apple-success equivalent */
-.btn-glass-success {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.9));
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
-}
-
-.btn-glass-success:hover {
-    background: linear-gradient(135deg, rgba(22, 163, 74, 1), rgba(21, 128, 61, 1));
-    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.45);
-}
-
-/* btn-apple-danger equivalent */
-.btn-glass-danger {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
-}
-
-.btn-glass-danger:hover {
-    background: linear-gradient(135deg, rgba(220, 38, 38, 1), rgba(185, 28, 28, 1));
-    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.45);
-}
-
-/* btn-apple-outline equivalent */
-.btn-glass-outline {
-    background: var(--colors-surface-pearl); /* Pearl Button */
-    border: 1px solid var(--colors-hairline);
-    color: var(--colors-ink-muted-80);
-    border-radius: 11px; /* rounded.md */
-    padding: 0.625rem 1.25rem; /* Adjusted padding */
-    font-size: 0.8rem;
     transition: all 0.2s ease;
 }
-
-.btn-glass-outline:hover {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: #6366f1;
-    color: #4f46e5;
+.modern-input:focus, .modern-select:focus {
+    outline: none; border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
-/* Badges */
-/* Badge Warna Baru - Soft Minimalist */
-.badge-lancar { 
-    background-color: #ecfdf5; /* Soft Mint */
-    color: #065f46; 
-    border-color: #d1fae5; 
+/* Buttons */
+.btn-glass {
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
+    color: white; border-radius: 12px; transition: all 0.25s ease;
 }
-.badge-cukup { 
-    background-color: #fffbeb; /* Soft Cream */
-    color: #92400e; 
-    border-color: #fef3c7; 
-}
-.badge-tidak { 
-    background-color: #fef2f2; /* Soft Rose */
-    color: #991b1b; 
-    border-color: #fee2e2; 
-}
+.btn-glass:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(79,70,229,0.3); }
 
-/* Tabel Modern */
-.modern-table-header {
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-/* Tabel Modern */
-.modern-table-header {
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-.history-section {
-    background: var(--colors-canvas-parchment); /* Parchment */
-    border-bottom: 1px solid rgba(203, 213, 225, 0.3);
-}
+/* Badges - Apple Aesthetic (Soft Colors) */
+.badge-lancar { background-color: #ecfdf5; color: #065f46; border-color: #d1fae5; }
+.badge-cukup { background-color: #fffbeb; color: #92400e; border-color: #fef3c7; }
+.badge-tidak { background-color: #fef2f2; color: #991b1b; border-color: #fee2e2; }
 
-/* Modal Glassmorphism */
-.modal-backdrop {
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
+/* Modal & Tables */
+.modern-table-header { background: #f8fafc; color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0; }
+.modal-backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(5px); }
+.modal-content { background: #fff; border-radius: 18px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+.animate-fade-in { animation: fadeIn 0.3s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.modal-content {
-    background: var(--colors-canvas);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--colors-hairline);
-    border-radius: 18px; /* rounded.lg */
-    box-shadow: 
-        0 25px 50px -12px rgba(0, 0, 0, 0.25),
-        0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: rgba(241, 245, 249, 0.5);
-    border-radius: 3px;
-}
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #94a3b8, #64748b);
-    border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #64748b, #475569);
-}
-
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.3s ease forwards;
-}
-
-/* Responsive */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .responsive-table {
-        display: block;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .juz-container {
-        min-width: 280px;
-    }
-}
-
-/* Decorative Elements */
-.decoration-blob {
-    position: fixed;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.15;
-    z-index: -1;
-    pointer-events: none;
-}
-.blob-1 {
-    width: 400px;
-    height: 400px;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    top: -100px;
-    right: -100px;
-}
-.blob-2 {
-    width: 300px;
-    height: 300px;
-    background: linear-gradient(135deg, #22c55e, #14b8a6);
-    bottom: -50px;
-    left: -50px;
+    .responsive-table { display: block; overflow-x: auto; white-space: nowrap; }
 }
 </style>
 </head>
-<body class="p-4 md:p-6 relative overflow-x-hidden">
-<!-- Decorative Blobs -->
-<div class="decoration-blob blob-1"></div>
-<div class="decoration-blob blob-2"></div>
-
+<body class="p-4 md:p-6">
 <div class="max-w-7xl mx-auto">
-<!-- Modern Header -->
+
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-    <div class="flex items-center gap-3" style="letter-spacing: -0.02em;">
-        <div class="text-4xl text-indigo-500 drop-shadow-sm">﷽</div>
+    <div class="flex items-center gap-3">
+        <div class="text-4xl text-indigo-500">﷽</div>
         <div>
-            <h1 class="text-2xl font-semibold text-gray-800 tracking-tight">MUROJA'AH</h1>
-            <p class="text-xs text-gray-500 mt-0.5">MONITORING KUALITAS HAFALAN</p>
+            <h1 class="text-2xl font-semibold text-gray-800">MUROJA'AH</h1>
+            <p class="text-xs text-gray-500">MONITORING KUALITAS HAFALAN</p>
         </div>
     </div>
-    <div class="text-left md:text-right glass-card px-4 py-3 inline-flex items-center gap-3">
-        <div>
+    <div class="glass-card px-4 py-3 inline-flex items-center gap-3">
+        <div class="text-right">
             <p class="text-sm font-medium text-gray-600">Minggu <?= $minggu_ini ?> · <?= $tahun_ini ?></p>
             <p class="text-xs text-gray-400"><?= date('d M Y') ?></p>
         </div>
@@ -832,595 +395,259 @@ body {
     </div>
 </div>
 
-<!-- Alert Messages -->
 <?php if (!empty($message)): ?>
-<div class="mb-6 px-5 py-4 glass-card border-l-4 <?= $message_type === 'success' ? 'border-green-500 bg-green-50/50 text-green-700' : ($message_type === 'error' ? 'border-red-500 bg-red-50/50 text-red-700' : 'border-yellow-500 bg-yellow-50/50 text-yellow-700') ?>">
-    <div class="flex items-center gap-3">
-        <i class="fas fa-<?= $message_type === 'success' ? 'circle-check' : ($message_type === 'error' ? 'circle-exclamation' : 'circle-info') ?> text-lg"></i>
-        <span class="text-sm font-medium"><?= htmlspecialchars($message) ?></span>
-    </div>
+<div class="mb-6 px-5 py-4 glass-card border-l-4 <?= $message_type === 'success' ? 'border-green-500 bg-green-50 text-green-700' : 'border-red-500 bg-red-50 text-red-700' ?>">
+    <?= htmlspecialchars($message) ?>
 </div>
 <?php endif; ?>
 
-<!-- Tombol Laporan -->
-<?php if ($selected_peserta_id > 0): ?>
-<div class="mb-7 flex justify-end">
-    <a href="manzil-report.php?peserta_id=<?= $selected_peserta_id ?>"
-        class="inline-flex items-center px-5 py-2.5 btn-glass-outline text-sm">
-        <i class="fas fa-chart-simple mr-2 text-xs"></i> Laporan Mingguan
-    </a>
-</div>
-<?php endif; ?>
-
-<!-- Kelola Santri -->
 <div class="glass-card mb-7 p-6">
     <div class="flex items-center gap-2 mb-5">
-        <i class="fas fa-users text-blue-500 text-sm"></i>
-        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
+        <i class="fas fa-users text-blue-500"></i><span class="text-sm font-medium">KELOLA SANTRI</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Tambah Santri -->
-        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-3">
-            <input type="text" name="nama_baru"
-                class="flex-1 modern-input text-sm"
-                placeholder="Nama santri baru" required>
-            <button type="submit" name="tambah_peserta"
-                class="px-5 btn-glass-success text-sm flex items-center justify-center whitespace-nowrap">
-                <i class="fas fa-plus mr-2 text-xs"></i> Tambah Santri
-            </button>
+        <form method="POST" class="flex gap-2">
+            <input type="text" name="nama_baru" class="flex-1 modern-input" placeholder="Nama santri baru" required>
+            <button type="submit" name="tambah_peserta" class="px-4 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition">Tambah</button>
         </form>
-        <!-- Hapus Santri -->
-        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-3">
-            <select name="peserta_id_hapus" class="flex-1 modern-select text-sm" required>
-                <option value="">-- Pilih santri --</option>
-                <?php foreach ($peserta_list as $peserta): ?>
-                <option value="<?= $peserta['id'] ?>"><?= htmlspecialchars($peserta['nama']) ?></option>
+        <form method="POST" class="flex gap-2">
+            <select name="peserta_id_hapus" class="flex-1 modern-select" required>
+                <option value="">-- Pilih santri dihapus --</option>
+                <?php foreach ($peserta_list as $p): ?>
+                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['nama']) ?></option>
                 <?php endforeach; ?>
             </select>
-            <button type="submit" name="hapus_peserta"
-                class="px-5 btn-glass-danger text-sm flex items-center justify-center whitespace-nowrap"
-                onclick="return confirm('Yakin ingin menghapus santri ini?')">
-                <i class="fas fa-trash-alt mr-2 text-xs"></i> Hapus Santri
-            </button>
+            <button type="submit" name="hapus_peserta" class="px-4 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 transition" onclick="return confirm('Yakin hapus?')">Hapus</button>
         </form>
     </div>
 </div>
 
-<!-- Form Input Muroja'ah -->
 <div class="glass-card p-6">
     <div class="flex items-center gap-2 mb-6">
-        <i class="fas fa-pen-to-square text-blue-500 text-sm"></i>
-        <span class="text-sm font-medium text-gray-700 tracking-wide">INPUT MUROJA'AH · MINGGU INI</span>
+        <i class="fas fa-pen-to-square text-blue-500"></i><span class="text-sm font-medium">INPUT MUROJA'AH · MINGGU INI</span>
     </div>
-    <form method="POST" action="" id="form-murojaah">
-        <!-- Select Santri -->
-        <div class="mb-7 max-w-md">
+    <form method="POST" id="form-murojaah">
+        <div class="mb-6 max-w-md">
             <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Santri</label>
-            <select name="peserta_id" id="peserta_id" class="w-full modern-select text-sm" required>
+            <select name="peserta_id" id="peserta_id" class="w-full modern-select" required>
                 <option value="">-- Pilih santri --</option>
-                <?php foreach ($peserta_list as $peserta): ?>
-                <option value="<?= $peserta['id'] ?>" <?= $selected_peserta_id == $peserta['id'] ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($peserta['nama']) ?>
-                </option>
+                <?php foreach ($peserta_list as $p): ?>
+                <option value="<?= $p['id'] ?>" <?= $selected_peserta_id == $p['id'] ? 'selected' : '' ?>><?= htmlspecialchars($p['nama']) ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
 
-        <!-- Tabel Muroja'ah Harian - Responsive -->
         <div class="overflow-x-auto responsive-table">
-            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden" style="border-radius: 18px;">
+            <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden">
                 <thead class="modern-table-header">
                     <tr>
-                        <th class="px-4 py-3 text-left font-semibold">Hari</th>
-                        <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
-                        <th class="px-4 py-3 text-center font-semibold">Jumlah Juz</th>
-                        <th class="px-4 py-3 text-left font-semibold">Detail Juz & Catatan</th>
-                        <th class="px-4 py-3 text-center font-semibold">Status</th>
+                        <th class="px-4 py-3 text-left">Hari</th>
+                        <th class="px-4 py-3 text-left">Tanggal</th>
+                        <th class="px-4 py-3 text-center">Jumlah Juz</th>
+                        <th class="px-4 py-3 text-left">Detail Juz & Status</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100/60">
+                <tbody class="divide-y divide-gray-100">
                     <?php
                     $hari_list = ['senin'=>'Senin','selasa'=>'Selasa','rabu'=>'Rabu','kamis'=>'Kamis','jumat'=>'Jumat','sabtu'=>'Sabtu','minggu'=>'Minggu'];
                     $hari_map = ['senin'=>'monday','selasa'=>'tuesday','rabu'=>'wednesday','kamis'=>'thursday','jumat'=>'friday','sabtu'=>'saturday','minggu'=>'sunday'];
-                    foreach ($hari_list as $key => $hari_nama):
-                    $tanggal_hari = date('Y-m-d', strtotime($hari_map[$key] . ' this week'));
-                    $tanggal_tampil = date('d M Y', strtotime($tanggal_hari));
+                    foreach ($hari_list as $key => $nama):
+                    $tgl = date('d M Y', strtotime($hari_map[$key] . ' this week'));
                     ?>
-                    <tr class="hover:bg-gray-50/50 transition-colors" style="border-radius: 18px;">
-                        <td class="px-4 py-4 text-gray-600 font-medium whitespace-nowrap"><?= $hari_nama ?></td>
-                        <td class="px-4 py-4 text-gray-400 text-xs whitespace-nowrap"><?= $tanggal_tampil ?></td>
+                    <tr class="hover:bg-gray-50/50">
+                        <td class="px-4 py-4 font-medium"><?= $nama ?></td>
+                        <td class="px-4 py-4 text-gray-400 text-xs"><?= $tgl ?></td>
                         <td class="px-4 py-4 text-center">
-                            <select name="hari[<?= $key ?>][jumlah]"
-                                class="jumlah-juz w-20 modern-select text-xs py-2 px-2"
-                                data-hari="<?= $key ?>">
-                                <?php for($j=0;$j<=5;$j++): ?>
-                                <option value="<?= $j ?>"><?= $j ?></option>
-                                <?php endfor; ?>
+                            <select name="hari[<?= $key ?>][jumlah]" class="jumlah-juz w-20 modern-select text-xs py-2" data-hari="<?= $key ?>">
+                                <?php for($j=0;$j<=5;$j++): ?><option value="<?= $j ?>"><?= $j ?></option><?php endfor; ?>
                             </select>
                         </td>
                         <td class="px-4 py-4">
-                            <div class="juz-container min-w-[320px]" id="juz-container-<?= $key ?>">
-                                <span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>
+                            <div class="juz-container flex flex-wrap gap-3" id="juz-container-<?= $key ?>">
+                                <span class="text-gray-400 text-xs italic">Pilih jumlah juz</span>
                             </div>
-                        </td>
-                        <td class="px-4 py-4 text-center">
-                            <span class="status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full whitespace-nowrap">
-                                <i class="fas fa-circle mr-1.5 text-[8px] text-gray-300"></i> Belum Diisi
-                            </span>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-
-        <hr class="my-7 border-gray-200/60">
-
-        <!-- Tombol Simpan -->
-        <div class="flex justify-center">
-            <button type="submit" name="simpan_murojaah"
-                class="px-10 py-3.5 btn-glass text-sm tracking-wide flex items-center gap-2">
-                <i class="fas fa-check text-xs"></i> SIMPAN DATA
-            </button>
+        <div class="mt-7 flex justify-center">
+            <button type="submit" name="simpan_murojaah" class="px-10 py-3.5 btn-glass text-sm flex items-center gap-2"><i class="fas fa-check"></i> SIMPAN DATA</button>
         </div>
     </form>
 </div>
 
-<!-- ========== RIWAYAT - MODERN MODAL PREVIEW ========== -->
 <div id="history-container" class="mt-7">
-    <?php if ($selected_peserta_id > 0): ?>
-    <div class="glass-card">
-        <div class="px-6 py-5 history-section flex items-center justify-between flex-wrap gap-3">
-            <div class="flex items-center gap-3" style="letter-spacing: -0.02em;">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                    <i class="fas fa-clock-rotate-left text-blue-500"></i>
-                </div>
-                <div>
-                    <span class="text-sm font-medium text-gray-700 tracking-wide block">
-                        RIWAYAT MUROJA'AH
-                    </span>
-                    <span class="text-xs text-gray-400"><?= htmlspecialchars($selected_peserta_nama) ?></span>
-                </div>
-            </div>
-            <button onclick="openHistoryModal()"
-                class="inline-flex items-center gap-2 px-5 py-2.5 btn-glass-outline text-sm transition-all duration-200 hover:shadow-md">
-                <i class="fas fa-eye"></i> Lihat Riwayat
-            </button>
-        </div>
-    </div>
-    <?php else: ?>
-    <div class="glass-card p-8 text-center text-gray-400 text-sm italic">
-        <i class="fas fa-user text-2xl mb-3 opacity-50"></i><br>
-        Pilih santri terlebih dahulu untuk melihat riwayat
-    </div>
-    <?php endif; ?>
+    <div class="glass-card p-8 text-center text-gray-400 text-sm italic">Pilih santri terlebih dahulu untuk melihat riwayat</div>
 </div>
 
-<!-- Footer -->
-<div class="mt-12 text-center pb-4">
-    <p class="text-xs text-gray-400 tracking-wide" style="letter-spacing: -0.02em;">
-        <i class="fas fa-heart mr-1 text-[10px] text-red-400"></i>
-        Reqra by Han · <?= date('Y') ?>
-    </p>
-</div>
-</div>
-
-<!-- ========== MODAL HISTORY (MODERN POPUP) ========== -->
-<div id="historyModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-5xl max-h-[90vh] overflow-hidden animate-fade-in">
-        <!-- Modal Header -->
-        <div class="px-6 py-5 border-b border-gray-200/60 flex items-center justify-between bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-book-open"></i>
-                </div>
-                <div style="letter-spacing: -0.02em;">
-                    <h3 class="text-lg font-semibold text-gray-700">Riwayat Muroja'ah</h3>
-                    <p class="text-xs text-gray-400" id="modalPesertaNama">Memuat data...</p>
-                </div>
-            </div>
-            <button onclick="closeHistoryModal()" class="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
-                <i class="fas fa-times"></i>
-            </button>
+</div> <div id="historyModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+    <div class="modal-content w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+            <h3 class="font-semibold text-gray-700">Riwayat Muroja'ah <span id="modalPesertaNama" class="text-indigo-500 font-bold ml-2"></span></h3>
+            <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times text-xl"></i></button>
         </div>
-        
-        <!-- Modal Body -->
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-140px)]" id="historyModalContent">
-            <div class="flex items-center justify-center py-12">
-                <div class="text-center">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                        <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
-                    </div>
-                    <p class="text-gray-500 text-sm">Memuat riwayat muroja'ah...</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modal Footer -->
-        <div class="px-6 py-4 border-t border-gray-200/60 bg-gray-50/50 flex justify-end gap-3">
-            <button onclick="closeHistoryModal()" class="px-5 py-2.5 btn-glass-outline text-sm">
-                <i class="fas fa-times mr-2"></i> Tutup
-            </button>
-            <button onclick="printHistory()" class="px-5 py-2.5 btn-glass text-sm">
-                <i class="fas fa-print mr-2"></i> Cetak
-            </button>
-        </div>
+        <div class="p-6 overflow-y-auto" id="historyModalContent"></div>
     </div>
 </div>
 
-<!-- Modal Edit -->
 <div id="editModal" class="fixed inset-0 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-    <div class="modal-content w-full max-w-md animate-fade-in">
-        <div class="px-6 py-5 border-b border-gray-200/60 flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-700 flex items-center gap-2">
-                <i class="fas fa-pencil-alt text-blue-500"></i> EDIT DATA
-            </h3>
-
-            <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500">
-                <i class="fas fa-times text-sm"></i>
-            </button>
+    <div class="modal-content w-full max-w-md">
+        <div class="px-6 py-4 border-b flex justify-between items-center">
+            <h3 class="font-semibold text-gray-700">Edit Data Juz</h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
         </div>
-        <form method="POST" action="" id="form-edit" class="p-6">
+        <form method="POST" class="p-6">
             <input type="hidden" id="edit_id" name="edit_id">
-            <div class="mb-5">
-                <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Juz</label>
-                <select id="edit_juz" name="edit_juz" class="w-full modern-select text-sm apple-select" required>
-                    <?php for ($j = 1; $j <= 30; $j++): ?>
-                    <option value="<?= $j ?>">Juz <?= $j ?></option>
-                    <?php endfor; ?>
+            <div class="mb-4">
+                <label class="block text-xs mb-2">Juz</label>
+                <select id="edit_juz" name="edit_juz" class="w-full modern-select" required>
+                    <?php for ($j=1; $j<=30; $j++): ?><option value="<?= $j ?>">Juz <?= $j ?></option><?php endfor; ?>
                 </select>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-5">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-2 font-medium">Ketuk</label>
-                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0" 
-                        class="w-full modern-input text-sm text-center apple-input" required>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-2 font-medium">Tuntun</label>
-                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0" 
-                        class="w-full modern-input text-sm text-center apple-input">
-                </div>
+            <div class="mb-4">
+                <label class="block text-xs mb-2">Kualitas</label>
+                <select id="edit_status" name="edit_status" class="w-full modern-select">
+                    <option value="lancar">Lancar</option>
+                    <option value="cukup">Cukup</option>
+                    <option value="tidak">Tidak Lancar</option>
+                </select>
             </div>
             <div class="mb-6">
-                <label class="block text-xs text-gray-500 mb-2 font-medium">Catatan Surat</label>
-                <input type="text" id="edit_catatan" name="edit_catatan"
-                    class="w-full modern-input text-sm" placeholder="Contoh: Al-Mulk, Al-Qalam">
+                <label class="block text-xs mb-2">Catatan</label>
+                <input type="text" id="edit_catatan" name="edit_catatan" class="w-full modern-input" placeholder="Catatan...">
             </div>
-            <div class="flex gap-3">
-                <button type="button" onclick="closeEditModal()"
-                    class="flex-1 px-4 py-3 btn-glass-outline text-sm">
-                    Batal
-                </button>
-                <button type="submit" name="edit_data"
-                    class="flex-1 px-4 py-3 btn-glass text-sm flex items-center justify-center"> 
-                    <i class="fas fa-check mr-2 text-xs"></i> Simpan
-                </button>
-            </div>
+            <button type="submit" name="edit_data" class="w-full py-3 btn-glass text-sm">Simpan Perubahan</button>
         </form>
     </div>
 </div>
 
 <script>
-// Generate Juz Detail Forms dengan Suggest
 document.addEventListener('DOMContentLoaded', function() {
-    const jumlahJuzSelects = document.querySelectorAll('.jumlah-juz');
-    
-    jumlahJuzSelects.forEach(select => {
+    // 1. Generate Input Dinamis tanpa kolom angka
+    document.querySelectorAll('.jumlah-juz').forEach(select => {
         select.addEventListener('change', function() {
             const hari = this.dataset.hari;
             const jumlah = parseInt(this.value);
             const container = document.getElementById(`juz-container-${hari}`);
-            const statusCell = this.closest('tr').querySelector('.status-badge');
             
             if (jumlah === 0) {
-                container.innerHTML = '<span class="text-gray-400 text-xs italic">pilih jumlah juz terlebih dahulu</span>';
-                if (statusCell) {
-                    statusCell.innerHTML = '<i class="fas fa-circle mr-1.5 text-[8px] text-gray-300"></i> Belum Diisi';
-                    statusCell.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full whitespace-nowrap';
-                }
+                container.innerHTML = '<span class="text-gray-400 text-xs italic">Pilih jumlah juz</span>';
                 return;
             }
             
-            let html = `<div class="space-y-2.5 max-w-lg">`;
+            let html = '';
             for (let i = 1; i <= jumlah; i++) {
                 html += `
-                <div class="flex flex-col gap-2 p-3 bg-white/60 border border-gray-200/60 rounded-lg backdrop-blur-sm">
-    <div class="flex items-center gap-2">
-        <span class="text-[11px] text-blue-600 font-medium min-w-[32px] bg-blue-50 px-2 py-1 rounded-lg">J${i}</span>
-        <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
-            class="flex-1 modern-input text-xs py-2 px-3" placeholder="Juz" required>
-        <datalist id="juzList-${hari}-${i}">${generateJuzOptions()}</datalist>
-    </div>
-    <div class="flex items-center gap-2">
-        <select name="hari[${hari}][status_${i}]" class="flex-1 modern-select text-xs py-2 px-2 status-select">
-            <option value="lancar">Lancar</option>
-            <option value="cukup">Cukup</option>
-            <option value="tidak">Tidak Lancar</option>
-        </select>
-        <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan..."
-            class="flex-1 modern-input text-xs py-2 px-3">
-    </div>
-</div>`;
+                <div class="flex flex-col gap-2 p-3 bg-gray-50/80 border border-gray-200 rounded-lg w-full sm:w-auto flex-1 min-w-[200px]">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold bg-indigo-100 text-indigo-600 px-2 py-1 rounded">J${i}</span>
+                        <input list="juzList" name="hari[${hari}][juz_${i}]" class="flex-1 modern-input text-xs py-1.5" placeholder="Juz ke-" required>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select name="hari[${hari}][status_${i}]" class="w-1/2 modern-select text-xs py-1.5 bg-white">
+                            <option value="lancar">Lancar</option>
+                            <option value="cukup">Cukup</option>
+                            <option value="tidak">Tidak Lancar</option>
+                        </select>
+                        <input type="text" name="hari[${hari}][catatan_${i}]" class="w-1/2 modern-input text-xs py-1.5" placeholder="Catatan">
+                    </div>
+                </div>`;
             }
-            html += `</div>`;
             container.innerHTML = html;
-            
-            // Update status preview
-            updateStatusPreview(hari, jumlah, statusCell);
         });
     });
 
-    function generateJuzOptions() {
-        let options = '';
-        for (let j = 1; j <= 30; j++) options += `<option value="${j}">Juz ${j}</option>`;
-        return options;
-    }
+    // Datalist untuk kemudahan ketik juz
+    const datalist = document.createElement('datalist');
+    datalist.id = 'juzList';
+    for(let i=1; i<=30; i++) datalist.innerHTML += `<option value="${i}">Juz ${i}</option>`;
+    document.body.appendChild(datalist);
 
-    function updateStatusPreview(hari, jumlah, statusCell) {
-        if (!statusCell) return;
-        
-        let totalKetuk = 0, totalTuntun = 0, count = 0;
-        for (let i = 1; i <= jumlah; i++) {
-            const ketukInput = document.querySelector(`input[name="hari[${hari}][ketuk_${i}]"]`);
-            const tuntunInput = document.querySelector(`input[name="hari[${hari}][tuntun_${i}]"]`);
-            if (ketukInput) {
-                const ketuk = parseInt(ketukInput.value || 0);
-                const tuntun = parseInt(tuntunInput?.value || 0);
-                if (ketuk > 0 || tuntun > 0) {
-                    totalKetuk += ketuk;
-                    totalTuntun += tuntun;
-                    count++;
-                }
-            }
-        }
-        
-        if (count > 0) {
-            const avgKetuk = totalKetuk / count;
-            const avgTuntun = totalTuntun / count;
-            
-            // LOGIKA KUALITAS BARU
-            let ketukScore = 0;
-            if (avgKetuk > 4) ketukScore = 2;
-            else if (avgKetuk > 3) ketukScore = 1;
-            
-            let tuntunScore = 0;
-            if (avgTuntun > 3) tuntunScore = 2;
-            else if (avgTuntun > 2) tuntunScore = 1;
-            
-            const finalScore = Math.max(ketukScore, tuntunScore);
-            
-            let statusText = 'Lancar', statusClass = 'badge-lancar', iconClass = 'fa-check';
-            if (finalScore === 2) {
-                statusText = 'Tidak Lancar';
-                statusClass = 'badge-tidak';
-                iconClass = 'fa-xmark';
-            } else if (finalScore === 1) {
-                statusText = 'Cukup';
-                statusClass = 'badge-cukup';
-                iconClass = 'fa-minus';
-            }
-            
-            statusCell.innerHTML = `<i class="fas ${iconClass} mr-1.5 text-[10px]"></i>${statusText}`;
-            statusCell.className = `status-badge inline-flex items-center px-3 py-1.5 text-xs border ${statusClass} rounded-full whitespace-nowrap`;
-        }
-    }
-
-    // Real-time status update on input
-    document.addEventListener('input', function(e) {
-        if (e.target.name && (e.target.name.includes('[ketuk_') || e.target.name.includes('[tuntun_'))) {
-            const hariMatch = e.target.name.match(/hari\[([^\]]+)\]/);
-            if (hariMatch) {
-                const hari = hariMatch[1];
-                const jumlahSelect = document.querySelector(`.jumlah-juz[data-hari="${hari}"]`);
-                if (jumlahSelect) {
-                    const jumlah = parseInt(jumlahSelect.value);
-                    const statusCell = jumlahSelect.closest('tr').querySelector('.status-badge');
-                    updateStatusPreview(hari, jumlah, statusCell);
-                }
-            }
-        }
-    });
-
-    // AUTO LOAD DATA SAAT PILIH SANTRI - VIA AJAX
+    // 2. AJAX Load History Otomatis saat ganti santri
     const pesertaSelect = document.getElementById('peserta_id');
     if (pesertaSelect) {
         pesertaSelect.addEventListener('change', function() {
-            const pesertaId = this.value;
-            if (pesertaId) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('peserta_id', pesertaId);
+            const pid = this.value;
+            if (pid) {
+                // Update URL parameter tanpa reload halaman
+                const url = new URL(window.location);
+                url.searchParams.set('peserta_id', pid);
                 window.history.pushState({}, '', url);
-                loadHistoryData(pesertaId);
+                
+                loadHistoryData(pid);
             } else {
-                const url = new URL(window.location.href);
-                url.searchParams.delete('peserta_id');
-                window.history.pushState({}, '', url);
-                document.getElementById('history-container').innerHTML = `
-                <div class="glass-card p-8 text-center text-gray-400 text-sm italic">
-                    <i class="fas fa-user text-2xl mb-3 opacity-50"></i><br>
-                    Pilih santri terlebih dahulu untuk melihat riwayat
-                </div>`;
+                document.getElementById('history-container').innerHTML = '<div class="glass-card p-8 text-center text-gray-400 text-sm italic">Pilih santri terlebih dahulu untuk melihat riwayat</div>';
             }
         });
     }
 
-    // Fungsi Load History Data via AJAX
-    function loadHistoryData(pesertaId) {
-        const container = document.getElementById('history-container');
-        container.classList.add('loading');
-        fetch('<?= $_SERVER['PHP_SELF'] ?>?action=get_history&peserta_id=' + pesertaId, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                container.innerHTML = data.html;
-            } else {
-                container.innerHTML = '<div class="glass-card p-6 text-center text-gray-400 text-sm italic">Gagal memuat data</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            container.innerHTML = '<div class="glass-card p-6 text-center text-red-400 text-sm italic">Terjadi kesalahan</div>';
-        })
-        .finally(() => {
-            container.classList.remove('loading');
-        });
+    function loadHistoryData(pid) {
+        const hc = document.getElementById('history-container');
+        hc.style.opacity = '0.5';
+        fetch(`?action=get_history&peserta_id=${pid}`, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) hc.innerHTML = data.html;
+                hc.style.opacity = '1';
+            }).catch(() => hc.innerHTML = 'Error loading data');
     }
 
-    // ========== MODAL HISTORY FUNCTIONS ==========
+    // Modal History Generation
     window.openHistoryModal = function() {
-        const modal = document.getElementById('historyModal');
-        const content = document.getElementById('historyModalContent');
-        const pesertaId = document.getElementById('peserta_id')?.value;
+        const pid = document.getElementById('peserta_id').value;
+        if (!pid) return alert('Pilih santri dulu');
         
-        if (!pesertaId) {
-            alert('Pilih santri terlebih dahulu!');
-            return;
-        }
+        document.getElementById('historyModal').classList.remove('hidden');
+        document.getElementById('historyModalContent').innerHTML = 'Loading...';
         
-        modal.classList.remove('hidden');
-        document.getElementById('modalPesertaNama').textContent = 'Memuat data...';
-        content.innerHTML = `
-        <div class="flex items-center justify-center py-12">
-            <div class="text-center">
-                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                    <i class="fas fa-spinner fa-spin text-gray-400 text-xl"></i>
-                </div>
-                <p class="text-gray-500 text-sm">Memuat riwayat muroja'ah...</p>
-            </div>
-        </div>`;
-        
-        // Load history content
-        fetch('<?= $_SERVER['PHP_SELF'] ?>?action=get_history&peserta_id=' + pesertaId, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('modalPesertaNama').textContent = data.nama_peserta || 'Santri';
-                content.innerHTML = generateHistoryModalContent(data.data);
-            } else {
-                content.innerHTML = '<div class="text-center py-8 text-gray-400">Gagal memuat data riwayat</div>';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            content.innerHTML = '<div class="text-center py-8 text-red-400">Terjadi kesalahan</div>';
-        });
-    };
-
-    function generateHistoryModalContent(historyData) {
-    if (!historyData || historyData.length === 0) {
-        return `
-        <div class="text-center py-12">
-            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <i class="fas fa-inbox text-gray-400 text-2xl"></i>
-            </div>
-            <p class="text-gray-500">Belum ada data murojaah minggu ini</p>
-        </div>`;
+        fetch(`?action=get_history&peserta_id=${pid}`, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('modalPesertaNama').innerText = `- ${data.nama_peserta}`;
+                if(!data.data || data.data.length===0) {
+                    document.getElementById('historyModalContent').innerHTML = '<p class="text-center text-gray-500 py-10">Data Kosong</p>';
+                    return;
+                }
+                
+                let html = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="modern-table-header"><tr>
+                    <th class="p-3 text-left">Hari/Tgl</th><th class="p-3 text-left">Juz</th><th class="p-3 text-center">Kualitas</th><th class="p-3 text-left">Catatan</th><th class="p-3 text-center">Aksi</th>
+                </tr></thead><tbody class="divide-y divide-gray-100">`;
+                
+                data.data.forEach((d) => {
+                    const tgl = new Date(d.tanggal).toLocaleDateString('id-ID', { day:'2-digit', month:'short' });
+                    html += `<tr>
+                        <td class="p-3"><div class="font-medium">${d.hari.substr(0,3)}</div><div class="text-[10px] text-gray-400">${tgl}</div></td>
+                        <td class="p-3 text-indigo-600 font-mono text-xs">${d.juz_list}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 text-[10px] border rounded-full ${d.badge_class}">${d.kualitas}</span></td>
+                        <td class="p-3 text-xs text-gray-500 max-w-[150px] truncate">${d.catatan || '-'}</td>
+                        <td class="p-3 text-center">
+                            <button onclick="openEditModal(${d.sample_id})" class="text-blue-500 mx-1"><i class="fas fa-edit"></i></button>
+                            <form method="POST" class="inline" onsubmit="return confirm('Hapus riwayat hari ini?')">
+                                <input type="hidden" name="delete_date" value="${d.tanggal}"><input type="hidden" name="peserta_id" value="${pid}">
+                                <button type="submit" name="hapus_per_tanggal" class="text-red-500 mx-1"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>`;
+                });
+                document.getElementById('historyModalContent').innerHTML = html + `</tbody></table></div>`;
+            });
     }
-    
-    let html = `
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="modern-table-header">
-                <tr>
-                    <th class="px-4 py-3 text-left font-semibold">Hari</th>
-                    <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
-                    <th class="px-4 py-3 text-left font-semibold">Juz</th>
-                    <th class="px-4 py-3 text-center font-semibold">Jumlah</th>
-                    <th class="px-4 py-3 text-center font-semibold">Kualitas</th>
-                    <th class="px-4 py-3 text-left font-semibold">Catatan</th>
-                    <th class="px-4 py-3 text-center font-semibold">Aksi</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100/60">`;
-    
-    historyData.forEach((data, index) => {
-        html += `
-        <tr class="hover:bg-gray-50/50 transition-colors animate-fade-in" style="animation-delay: ${index * 50}ms">
-            <td class="px-4 py-4 text-gray-700 font-medium">${data.hari.substring(0, 3)}</td>
-            <td class="px-4 py-4 text-gray-400 text-xs">${new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</td>
-            <td class="px-4 py-4"><span class="font-mono text-indigo-600 text-xs bg-indigo-50 px-2 py-1 rounded-lg">${data.juz_list}</span></td>
-            <td class="px-4 py-4 text-center"><span class="text-xs font-semibold text-gray-600">${data.total_juz}</span></td>
-            <td class="px-4 py-4 text-center">
-                <span class="inline-flex items-center px-3 py-1 text-[11px] border rounded-full ${data.badge_class}">
-                    ${data.kualitas}
-                </span>
-            </td>
-            <td class="px-4 py-4 text-gray-400 italic text-xs max-w-[150px] truncate">${data.catatan || '-'}</td>
-            <td class="px-4 py-4 text-center">
-                <form method="POST" action="" onsubmit="return confirm('Hapus data tanggal ${data.tanggal}?')">
-                    <input type="hidden" name="delete_date" value="${data.tanggal}">
-                    <input type="hidden" name="peserta_id" value="<?= $selected_peserta_id ?>">
-                    <button type="submit" name="hapus_per_tanggal" class="text-red-400 hover:text-red-600 transition-colors">
-                        <i class="fas fa-trash-alt text-xs"></i>
-                    </button>
-                </form>
-            </td>
-        </tr>`;
-    });
-    
-    html += `</tbody></table></div>`;
-    return html;
-}
-    window.closeHistoryModal = function() {
-        document.getElementById('historyModal').classList.add('hidden');
-    };
 
-    window.printHistory = function() {
-        window.print();
-    };
-
-    // Close modal on backdrop click
-    document.getElementById('historyModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeHistoryModal();
-    });
-
-    // ========== MODAL EDIT FUNCTIONS ==========
+    window.closeHistoryModal = () => document.getElementById('historyModal').classList.add('hidden');
+    
+    // Modal Edit
     window.openEditModal = function(id) {
-        closeHistoryModal(); // Close history modal first
+        closeHistoryModal();
         document.getElementById('edit_id').value = id;
         document.getElementById('editModal').classList.remove('hidden');
-        // Reset fields
-        document.getElementById('edit_juz').value = '';
-        document.getElementById('edit_ketuk').value = '0';
-        document.getElementById('edit_tuntun').value = '0';
-        document.getElementById('edit_catatan').value = '';
-    };
-
-    window.closeEditModal = function() {
-        document.getElementById('editModal').classList.add('hidden');
-    };
-
-    document.getElementById('editModal')?.addEventListener('click', function(e) {
-        if (e.target === this) closeEditModal();
-    });
-
-    // Handle browser back/forward
-    window.addEventListener('popstate', function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const pesertaId = urlParams.get('peserta_id');
-        if (pesertaId) {
-            document.getElementById('peserta_id').value = pesertaId;
-            loadHistoryData(pesertaId);
-        } else {
-            document.getElementById('peserta_id').value = '';
-            document.getElementById('history-container').innerHTML = `
-            <div class="glass-card p-8 text-center text-gray-400 text-sm italic">
-                <i class="fas fa-user text-2xl mb-3 opacity-50"></i><br>
-                Pilih santri terlebih dahulu untuk melihat riwayat
-            </div>`;
-        }
-    });
-
-    // Initialize with current participant if any
-    <?php if ($selected_peserta_id > 0): ?>
-    if (document.getElementById('peserta_id')) {
-        document.getElementById('peserta_id').value = '<?= $selected_peserta_id ?>';
     }
+    window.closeEditModal = () => document.getElementById('editModal').classList.add('hidden');
+
+    // Inisiasi awal jika ada peserta_id di URL
+    <?php if ($selected_peserta_id > 0): ?>
+        loadHistoryData(<?= $selected_peserta_id ?>);
     <?php endif; ?>
 });
 </script>
