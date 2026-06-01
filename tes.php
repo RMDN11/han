@@ -1013,7 +1013,6 @@ hr.soft {
                         <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
                         <th class="px-4 py-3 text-center font-semibold">Jumlah Juz</th>
                         <th class="px-4 py-3 text-left font-semibold">Detail Juz & Catatan</th>
-                        <th class="px-4 py-3 text-center font-semibold">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1041,11 +1040,7 @@ hr.soft {
                                 <span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>
                             </div>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full whitespace-nowrap">
-                                <i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i> Belum diisi
-                            </span>
-                        </td>
+                        
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
