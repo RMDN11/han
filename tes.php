@@ -47,6 +47,22 @@ function hitungKualitasPerJuz($ketuk, $tuntun) {
 }
 
 // ==========================================
+// FUNGSI: MAP KUALITAS KE NILAI KETUK/TUNTUN
+// ==========================================
+function mapKualitasKeNilai($kualitas) {
+    switch ($kualitas) {
+        case 'Lancar':
+            return ['ketuk' => 2, 'tuntun' => 1];
+        case 'Cukup':
+            return ['ketuk' => 3, 'tuntun' => 2];
+        case 'Tidak Lancar':
+            return ['ketuk' => 4, 'tuntun' => 3];
+        default:
+            return ['ketuk' => 2, 'tuntun' => 1];
+    }
+}
+
+// ==========================================
 // 1. PROSES HAPUS SANTRI (Non-Aktifkan)
 // ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['hapus_peserta']) && !$is_ajax) {
@@ -440,7 +456,35 @@ if ($is_ajax && isset($_GET['action']) && $_GET['action'] === 'get_history') {
 }
 
 // ==========================================
-// FUNCTION GENERATE INLINE TABLE HTML (PER-JUZ)
+// AJAX GET EDIT DATA
+// ==========================================
+if ($is_ajax && isset($_GET['action']) && $_GET['action'] === 'get_edit_data') {
+    $data_id = (int)$_GET['id'];
+    $response = ['success' => false];
+    if ($data_id > 0) {
+        $stmt = $conn->prepare("SELECT id, juz, ketuk, tuntun, catatan FROM manzil_data WHERE id = ?");
+        $stmt->bind_param("i", $data_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $kualitas_info = hitungKualitasPerJuz($row['ketuk'], $row['tuntun']);
+            $response['success'] = true;
+            $response['id'] = $row['id'];
+            $response['juz'] = $row['juz'];
+            $response['ketuk'] = $row['ketuk'];
+            $response['tuntun'] = $row['tuntun'];
+            $response['catatan'] = $row['catatan'];
+            $response['kualitas'] = $kualitas_info['status'];
+        }
+        $stmt->close();
+    }
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+}
+
+// ==========================================
+// FUNCTION GENERATE INLINE TABLE HTML (PER-JUZ) - TANPA KOLOM KETUK/TUNTUN
 // ==========================================
 function generateHistoryTableHTML($history_data, $peserta_id) {
     if (empty($history_data)) {
@@ -463,8 +507,6 @@ function generateHistoryTableHTML($history_data, $peserta_id) {
     <tr>
     <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
     <th class="px-4 py-3 text-left font-semibold">Juz</th>
-    <th class="px-4 py-3 text-center font-semibold">Ketuk</th>
-    <th class="px-4 py-3 text-center font-semibold">Tuntun</th>
     <th class="px-4 py-3 text-center font-semibold">Status</th>
     <th class="px-4 py-3 text-left font-semibold">Catatan</th>
     <th class="px-4 py-3 text-center font-semibold">Aksi</th>
@@ -486,16 +528,6 @@ function generateHistoryTableHTML($history_data, $peserta_id) {
             <td class="px-4 py-3">
             <span class="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             ' . $juz['juz'] . '
-            </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 text-orange-600 font-medium text-xs">
-            ' . $juz['ketuk'] . 'x
-            </span>
-            </td>
-            <td class="px-4 py-3 text-center">
-            <span class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-pink-50 text-pink-600 font-medium text-xs">
-            ' . $juz['tuntun'] . 'x
             </span>
             </td>
             <td class="px-4 py-3 text-center">
@@ -627,49 +659,28 @@ if ($selected_peserta_id > 0) {
 <style>
 /* Apple-inspired Design System Variables */
 :root {
-    /* Colors from DESIGN.md */
-    --colors-primary: #0066cc; /* Action Blue */
+    --colors-primary: #0066cc;
     --colors-primary-focus: #0071e3;
-    --colors-primary-on-dark: #2997ff;
-    --colors-canvas: #ffffff; /* Pure White */
-    --colors-canvas-parchment: #f5f5f7; /* Parchment */
-    --colors-surface-pearl: #fafafc; /* Pearl Button */
-    --colors-ink: #1d1d1f; /* Near-Black Ink */
+    --colors-canvas: #ffffff;
+    --colors-canvas-parchment: #f5f5f7;
+    --colors-surface-pearl: #fafafc;
+    --colors-ink: #1d1d1f;
     --colors-ink-muted-80: #333333;
     --colors-ink-muted-48: #7a7a7a;
     --colors-hairline: #e0e0e0;
-
-    /* Custom colors for badges based on existing logic, adapted to Apple's aesthetic */
-    --badge-success-bg: #dcfce7; /* Light Green */
-    --badge-success-text: #166534; /* Dark Green */
-    --badge-danger-bg: #fee2e2; /* Light Red */
-    --badge-danger-text: #991b1b; /* Dark Red */
-    --badge-warning-bg: #fef3c7; /* Light Yellow */
-    --badge-warning-text: #92400e; /* Dark Yellow */
-
-    /* Spacing tokens (using 8px base unit) */
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 16px; /* Adjusted from 17px for consistency with 8px grid */
-    --spacing-lg: 24px;
-}
-
-body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    line-height: 1.47; /* typography.body line-height */
-}
-
-/* GLASSMORPHISM & MODERN UI */
-* {
-    -webkit-tap-highlight-color: transparent;
-    scroll-behavior: smooth;
+    --badge-success-bg: #dcfce7;
+    --badge-success-text: #166534;
+    --badge-danger-bg: #fee2e2;
+    --badge-danger-text: #991b1b;
+    --badge-warning-bg: #fef3c7;
+    --badge-warning-text: #92400e;
 }
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--colors-canvas-parchment); /* Parchment */
+    background: var(--colors-canvas-parchment);
     background-attachment: fixed;
-    color: var(--colors-ink); /* Near-Black Ink */
+    color: var(--colors-ink);
     min-height: 100vh;
 }
 
@@ -694,9 +705,9 @@ body {
 .apple-input, .apple-select {
     background: var(--colors-canvas);
     border: 1px solid var(--colors-hairline);
-    border-radius: 8px; /* rounded.sm */
-    padding: 0.6rem 0.8rem; /* typography.caption */
-    font-size: 0.875rem; /* typography.caption */
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.875rem;
     transition: all 0.2s ease;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
@@ -712,58 +723,60 @@ body {
     border-color: var(--colors-primary);
 }
 
-/* Modern Button Styles */
-.btn-modern {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.75rem;
-    font-size: 0.875rem;
+/* Quality Buttons */
+.quality-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 9999px;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    border-radius: 1rem;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+    border: 1px solid transparent;
 }
 
-.btn-modern:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+.quality-btn-lancar {
+    background-color: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+.quality-btn-lancar:hover, .quality-btn-lancar.active {
+    background-color: #bbf7d0;
+    border-color: #86efac;
+    box-shadow: 0 2px 8px rgba(22, 101, 52, 0.15);
+    transform: scale(0.98);
 }
 
-.btn-modern:active {
-    transform: translateY(0);
+.quality-btn-cukup {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+.quality-btn-cukup:hover, .quality-btn-cukup.active {
+    background-color: #fde68a;
+    border-color: #fcd34d;
+    box-shadow: 0 2px 8px rgba(146, 64, 14, 0.15);
+    transform: scale(0.98);
 }
 
-.btn-soft {
-    background: var(--colors-surface-pearl); /* Pearl Button */
-    border: 1px solid var(--colors-hairline);
-    color: var(--colors-ink-muted-80);
-    border-radius: 11px; /* rounded.md */
-    padding: 0.625rem 1.25rem; /* Adjusted padding */
-    font-size: 0.875rem; /* typography.caption */
-    transition: all 0.2s ease;
+.quality-btn-tidak {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+.quality-btn-tidak:hover, .quality-btn-tidak.active {
+    background-color: #fecaca;
+    border-color: #fca5a5;
+    box-shadow: 0 2px 8px rgba(153, 27, 27, 0.15);
+    transform: scale(0.98);
 }
 
-.btn-soft:hover {
-    background: rgba(226, 232, 240, 0.9);
-    border-color: rgba(148, 163, 184, 0.8);
-}
-
-/* Badge Styles - Colorful */
-.badge-success {
-    background: var(--badge-success-bg);
-    color: var(--badge-success-text);
-    border: 1px solid var(--badge-success-bg);
-}
-
-.btn-apple-primary { /* Primary Action Blue button */
+.btn-apple-primary {
     background-color: var(--colors-primary);
     border: none;
     color: var(--colors-canvas);
     padding: 0.75rem 1.75rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: 9999px; /* rounded.pill */
+    border-radius: 9999px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 14px rgba(0, 102, 204, 0.35);
 }
@@ -775,6 +788,27 @@ body {
 
 .btn-apple-primary:active {
     transform: scale(0.95);
+}
+
+.btn-soft {
+    background: var(--colors-surface-pearl);
+    border: 1px solid var(--colors-hairline);
+    color: var(--colors-ink-muted-80);
+    border-radius: 11px;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.btn-soft:hover {
+    background: rgba(226, 232, 240, 0.9);
+    border-color: rgba(148, 163, 184, 0.8);
+}
+
+.badge-success {
+    background: var(--badge-success-bg);
+    color: var(--badge-success-text);
+    border: 1px solid var(--badge-success-bg);
 }
 
 .badge-warning {
@@ -813,7 +847,6 @@ hr.soft {
     pointer-events: none;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.98); }
     to { opacity: 1; transform: scale(1); }
@@ -832,7 +865,6 @@ hr.soft {
     animation: slideUp 0.3s ease-out forwards;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .responsive-table {
         display: block;
@@ -842,15 +874,19 @@ hr.soft {
     }
     
     .juz-container {
-        min-width: 200px;
+        min-width: 280px;
     }
     
     .glass-card {
         border-radius: 1.25rem;
     }
+    
+    .quality-btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.7rem;
+    }
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -891,7 +927,7 @@ hr.soft {
     </div>
 </div>
 
-<!-- Alert Messages - Modern Style -->
+<!-- Alert Messages -->
 <?php if (!empty($message)): ?>
 <div class="mb-6 px-5 py-4 glass-card border-l-4 text-sm animate-slide-up <?= 
     $message_type === 'success' ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 text-green-800' : 
@@ -914,16 +950,15 @@ hr.soft {
 </div>
 <?php endif; ?>
 
-<!-- Kelola Santri - Glass Card -->
+<!-- Kelola Santri -->
 <div class="glass-card mb-7 p-5 animate-slide-up">
     <div class="flex items-center gap-2 mb-4">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
             <i class="fas fa-users text-xs"></i>
         </div>
-        <span class="text-sm font-medium text-gray-700 tracking-wide" style="letter-spacing: -0.02em;">KELOLA SANTRI</span>
+        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Tambah Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
             <input type="text" name="nama_baru"
                 class="flex-1 apple-input text-sm"
@@ -933,7 +968,6 @@ hr.soft {
                 <i class="fas fa-plus mr-1 text-xs"></i> Tambah Santri
             </button>
         </form>
-        <!-- Hapus Santri -->
         <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
             <select name="peserta_id_hapus" class="flex-1 apple-select text-sm" required>
                 <option value="">-- Pilih santri untuk dihapus --</option>
@@ -942,7 +976,7 @@ hr.soft {
                 <?php endforeach; ?>
             </select>
             <button type="submit" name="hapus_peserta"
-                class="px-4 btn-soft-danger text-sm flex items-center justify-center whitespace-nowrap"
+                class="px-4 bg-red-50 text-red-700 border border-red-200 rounded-full text-sm flex items-center justify-center whitespace-nowrap hover:bg-red-100 transition-colors"
                 onclick="return confirm('Yakin ingin menghapus santri ini? Ini akan menonaktifkan santri.')">
                 <i class="fas fa-trash-alt mr-1 text-xs"></i> Hapus
             </button>
@@ -950,16 +984,15 @@ hr.soft {
     </div>
 </div>
 
-<!-- Form Input Muroja'ah - Glass Card -->
+<!-- Form Input Muroja'ah -->
 <div class="glass-card p-5 animate-slide-up" style="animation-delay: 0.1s">
     <div class="flex items-center gap-2 mb-5">
         <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
             <i class="fas fa-pen-to-square text-xs"></i>
         </div>
-        <span class="text-sm font-medium text-gray-700 tracking-wide" style="letter-spacing: -0.02em;">INPUT MUROJA'AH · MINGGU INI</span>
+        <span class="text-sm font-medium text-gray-700 tracking-wide">INPUT MUROJA'AH · MINGGU INI</span>
     </div> 
     <form method="POST" action="" id="form-murojaah">
-        <!-- Pilih Santri -->
         <div class="mb-6 max-w-md">
             <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Santri</label>
             <select name="peserta_id" id="peserta_id" class="w-full modern-select text-sm" required>
@@ -972,7 +1005,6 @@ hr.soft {
             </select>
         </div>
 
-        <!-- Tabel Muroja'ah Harian - Responsive -->
         <div class="overflow-x-auto responsive-table">
             <table class="w-full text-sm border border-gray-200/60 rounded-xl overflow-hidden" style="border-radius: 18px;">
                 <thead class="table-header">
@@ -1010,7 +1042,7 @@ hr.soft {
                             </div>
                         </td>
                         <td class="px-4 py-3 text-center">
-                            <span class="inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full whitespace-nowrap">
+                            <span class="status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full whitespace-nowrap">
                                 <i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i> Belum diisi
                             </span>
                         </td>
@@ -1022,7 +1054,6 @@ hr.soft {
 
         <hr class="soft my-6">
 
-        <!-- Tombol Simpan -->
         <div class="flex justify-center">
             <button type="submit" name="simpan_murojaah"
                 class="px-10 py-3 btn-apple-primary text-sm tracking-wide flex items-center">
@@ -1032,7 +1063,7 @@ hr.soft {
     </form>
 </div>
 
-<!-- ========== RIWAYAT - INLINE TABLE ========== -->
+<!-- Riwayat -->
 <div id="history-container" class="animate-slide-up" style="animation-delay: 0.2s">
     <?php if (!empty($history_grouped) && $selected_peserta_id > 0): ?>
         <?= generateHistoryTableHTML($history_grouped, $selected_peserta_id) ?>
@@ -1047,10 +1078,10 @@ hr.soft {
     <?php endif; ?>
 </div>
 
-<!-- Modal Edit - Modern Style -->
+<!-- Modal Edit -->
 <div id="editModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 animate-fade-in">
     <div class="bg-gradient-to-br from-white/95 to-gray-50/95 border border-white/40 rounded-3xl max-w-md w-full p-6 shadow-2xl">
-        <div class="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200/60" style="letter-spacing: -0.02em;">
+        <div class="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200/60">
             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
                 <i class="fas fa-pencil-alt text-xs"></i>
             </div>
@@ -1058,6 +1089,8 @@ hr.soft {
         </div> 
         <form method="POST" action="" id="form-edit">
             <input type="hidden" id="edit_id" name="edit_id">
+            <input type="hidden" id="edit_ketuk" name="edit_ketuk" value="2">
+            <input type="hidden" id="edit_tuntun" name="edit_tuntun" value="1">
             <div class="mb-4">
                 <label class="block text-xs text-gray-500 mb-2 font-medium">Pilih Juz</label>
                 <select id="edit_juz" name="edit_juz" class="w-full modern-select text-sm" required>
@@ -1066,16 +1099,12 @@ hr.soft {
                     <?php endfor; ?>
                 </select>
             </div>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-2 font-medium">Ketuk</label>
-                    <input type="number" id="edit_ketuk" name="edit_ketuk" min="0" max="10" value="0" 
-                        class="w-full modern-input text-sm text-center font-medium apple-input" required>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-2 font-medium">Tuntun</label>
-                    <input type="number" id="edit_tuntun" name="edit_tuntun" min="0" max="10" value="0" 
-                        class="w-full modern-input text-sm text-center font-medium apple-input">
+            <div class="mb-4">
+                <label class="block text-xs text-gray-500 mb-2 font-medium">Kualitas</label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" data-quality="Lancar" class="quality-btn quality-btn-lancar flex-1">Lancar</button>
+                    <button type="button" data-quality="Cukup" class="quality-btn quality-btn-cukup flex-1">Cukup</button>
+                    <button type="button" data-quality="Tidak Lancar" class="quality-btn quality-btn-tidak flex-1">Tidak Lancar</button>
                 </div>
             </div>
             <div class="mb-5">
@@ -1097,9 +1126,8 @@ hr.soft {
     </div>
 </div>
 
-<!-- Footer -->
 <div class="mt-10 text-center">
-    <p class="text-xs text-gray-400 tracking-wide" style="letter-spacing: -0.02em;">
+    <p class="text-xs text-gray-400 tracking-wide">
         <i class="fas fa-circle mr-1 text-[5px] align-middle text-blue-400"></i>
         Reqra by Han · <?= date('Y') ?> · <span class="text-gray-300">|</span> Muroja'ah System
     </p>
@@ -1107,7 +1135,17 @@ hr.soft {
 </div>
 
 <script>
-// Generate Juz Detail Forms dengan Suggest
+// Fungsi untuk mendapatkan nilai ketuk/tuntun berdasarkan kualitas
+function getValuesFromQuality(quality) {
+    switch(quality) {
+        case 'Lancar': return { ketuk: 2, tuntun: 1 };
+        case 'Cukup': return { ketuk: 3, tuntun: 2 };
+        case 'Tidak Lancar': return { ketuk: 4, tuntun: 3 };
+        default: return { ketuk: 2, tuntun: 1 };
+    }
+}
+
+// Generate Juz Detail Forms dengan Tombol Kualitas
 document.addEventListener('DOMContentLoaded', function() {
     const jumlahJuzSelects = document.querySelectorAll('.jumlah-juz');
     
@@ -1116,21 +1154,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const hari = this.dataset.hari;
             const jumlah = parseInt(this.value);
             const container = document.getElementById(`juz-container-${hari}`);
-            const statusCell = this.closest('tr').querySelector('td:last-child span');
+            const statusCell = this.closest('tr').querySelector('.status-badge');
             
             if (jumlah === 0) {
                 container.innerHTML = '<span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>';
                 if (statusCell) {
                     statusCell.innerHTML = '<i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i>Belum diisi';
-                    statusCell.className = 'inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full';
+                    statusCell.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full';
                 }
                 return;
             }
             
-            let html = `<div class="space-y-2.5 max-w-lg">`;
+            let html = `<div class="space-y-3 max-w-lg">`;
             for (let i = 1; i <= jumlah; i++) {
                 html += `
-                <div class="flex flex-wrap items-center gap-2 p-3 bg-gradient-to-br from-gray-50/80 to-white/80 border border-gray-200/60 rounded-xl">
+                <div class="flex flex-wrap items-center gap-2 p-3 bg-gradient-to-br from-gray-50/80 to-white/80 border border-gray-200/60 rounded-xl" data-juz-index="${i}">
                     <span class="text-[11px] font-semibold text-gray-600 min-w-[32px] bg-gray-100/80 px-2 py-1 rounded-lg">J${i}</span>
                     <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
                         class="flex-1 min-w-[70px] modern-input text-xs py-2 px-2.5" 
@@ -1138,10 +1176,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <datalist id="juzList-${hari}-${i}">
                         ${generateJuzOptions()}
                     </datalist>
-                    <input type="number" name="hari[${hari}][ketuk_${i}]" min="0" max="10" value="0" placeholder="K"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center" data-type="ketuk" data-hari="${hari}" data-idx="${i}">
-                    <input type="number" name="hari[${hari}][tuntun_${i}]" min="0" max="10" value="0" placeholder="T"
-                        class="w-14 modern-input text-xs py-2 px-2 text-center" data-type="tuntun" data-hari="${hari}" data-idx="${i}">
+                    <div class="flex gap-1">
+                        <button type="button" data-quality="Lancar" class="quality-btn quality-btn-lancar text-[11px] px-2 py-1">Lancar</button>
+                        <button type="button" data-quality="Cukup" class="quality-btn quality-btn-cukup text-[11px] px-2 py-1">Cukup</button>
+                        <button type="button" data-quality="Tidak Lancar" class="quality-btn quality-btn-tidak text-[11px] px-2 py-1">Tidak</button>
+                    </div>
+                    <input type="hidden" name="hari[${hari}][ketuk_${i}]" class="ketuk-hidden" value="2">
+                    <input type="hidden" name="hari[${hari}][tuntun_${i}]" class="tuntun-hidden" value="1">
                     <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan"
                         class="flex-1 min-w-[90px] modern-input text-xs py-2 px-2">
                 </div>`;
@@ -1149,84 +1190,109 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `</div>`;
             container.innerHTML = html;
             
-            // Update status setelah generate
+            // Attach event listeners to quality buttons in this container
+            attachQualityButtonListeners(container);
             updateRowStatus(this.closest('tr'));
         });
     });
-
-    // Event delegation untuk input ketuk/tuntun
-    document.addEventListener('input', function(e) {
-        if (e.target.dataset.type === 'ketuk' || e.target.dataset.type === 'tuntun') {
-            const row = e.target.closest('tr');
-            updateRowStatus(row);
-        }
-    });
-
+    
+    function attachQualityButtonListeners(container) {
+        container.querySelectorAll('.quality-btn').forEach(btn => {
+            btn.removeEventListener('click', qualityClickHandler);
+            btn.addEventListener('click', qualityClickHandler);
+        });
+    }
+    
+    function qualityClickHandler(e) {
+        const btn = e.currentTarget;
+        const quality = btn.dataset.quality;
+        const parentDiv = btn.closest('[data-juz-index]');
+        const ketukHidden = parentDiv.querySelector('.ketuk-hidden');
+        const tuntunHidden = parentDiv.querySelector('.tuntun-hidden');
+        const values = getValuesFromQuality(quality);
+        ketukHidden.value = values.ketuk;
+        tuntunHidden.value = values.tuntun;
+        
+        // Update active state on buttons within same juz group
+        parentDiv.querySelectorAll('.quality-btn').forEach(button => {
+            button.classList.remove('active');
+        });
+        btn.classList.add('active');
+        
+        // Update row status
+        const row = btn.closest('tr');
+        updateRowStatus(row);
+    }
+    
     function updateRowStatus(row) {
         const jumlahSelect = row.querySelector('.jumlah-juz');
-        const statusCell = row.querySelector('td:last-child span');
-        if (!jumlahSelect || !statusCell) return;
+        const statusSpan = row.querySelector('.status-badge');
+        if (!jumlahSelect || !statusSpan) return;
         
         const jumlah = parseInt(jumlahSelect.value);
-        if (jumlah === 0) return;
+        if (jumlah === 0) {
+            statusSpan.innerHTML = '<i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i>Belum diisi';
+            statusSpan.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full';
+            return;
+        }
         
         const hari = jumlahSelect.dataset.hari;
-        let worstStatus = 'Lancar';
+        let worstQuality = 'Lancar';
+        let allFilled = true;
         
         for (let i = 1; i <= jumlah; i++) {
-            const ketukInput = document.querySelector(`input[name="hari[${hari}][ketuk_${i}]"]`);
-            const tuntunInput = document.querySelector(`input[name="hari[${hari}][tuntun_${i}]"]`);
-            if (ketukInput && tuntunInput) {
-                const ketuk = parseInt(ketukInput.value || 0);
-                const tuntun = parseInt(tuntunInput.value || 0);
-                
-                // Hitung kualitas per juz
-                let status_ketuk = 'Lancar';
-                if (ketuk == 3) status_ketuk = 'Cukup';
-                else if (ketuk > 3) status_ketuk = 'Tidak Lancar';
-                
-                let status_tuntun = 'Lancar';
-                if (tuntun == 2) status_tuntun = 'Cukup';
-                else if (tuntun > 2) status_tuntun = 'Tidak Lancar';
-                
-                // Ambil worst
-                let juzStatus = 'Lancar';
-                if (status_ketuk === 'Tidak Lancar' || status_tuntun === 'Tidak Lancar') {
-                    juzStatus = 'Tidak Lancar';
-                } else if (status_ketuk === 'Cukup' || status_tuntun === 'Cukup') {
-                    juzStatus = 'Cukup';
-                }
-                
-                // Update worst status untuk row
-                if (juzStatus === 'Tidak Lancar') {
-                    worstStatus = 'Tidak Lancar';
-                } else if (juzStatus === 'Cukup' && worstStatus !== 'Tidak Lancar') {
-                    worstStatus = 'Cukup';
-                }
+            const ketukHidden = document.querySelector(`input[name="hari[${hari}][ketuk_${i}]"]`);
+            if (!ketukHidden || ketukHidden.value === undefined) {
+                allFilled = false;
+                continue;
             }
+            const ketuk = parseInt(ketukHidden.value);
+            const tuntunHidden = document.querySelector(`input[name="hari[${hari}][tuntun_${i}]"]`);
+            const tuntun = parseInt(tuntunHidden?.value || 0);
+            
+            let status_ketuk = 'Lancar';
+            if (ketuk == 3) status_ketuk = 'Cukup';
+            else if (ketuk > 3) status_ketuk = 'Tidak Lancar';
+            
+            let status_tuntun = 'Lancar';
+            if (tuntun == 2) status_tuntun = 'Cukup';
+            else if (tuntun > 2) status_tuntun = 'Tidak Lancar';
+            
+            let juzQuality = 'Lancar';
+            if (status_ketuk === 'Tidak Lancar' || status_tuntun === 'Tidak Lancar') juzQuality = 'Tidak Lancar';
+            else if (status_ketuk === 'Cukup' || status_tuntun === 'Cukup') juzQuality = 'Cukup';
+            
+            if (juzQuality === 'Tidak Lancar') worstQuality = 'Tidak Lancar';
+            else if (juzQuality === 'Cukup' && worstQuality !== 'Tidak Lancar') worstQuality = 'Cukup';
         }
         
-        // Update badge
-        let statusClass = 'badge-success', iconClass = 'fa-check';
-        if (worstStatus === 'Tidak Lancar') {
-            statusClass = 'badge-danger';
-            iconClass = 'fa-xmark';
-        } else if (worstStatus === 'Cukup') {
-            statusClass = 'badge-warning';
-            iconClass = 'fa-minus';
+        if (!allFilled && jumlah > 0) {
+            statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle mr-1.5 text-xs"></i>Belum lengkap';
+            statusSpan.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full';
+            return;
         }
         
-        statusCell.innerHTML = `<i class="fas ${iconClass} mr-1.5 text-xs"></i>${worstStatus}`;
-        statusCell.className = `inline-flex items-center px-3 py-1.5 text-xs border rounded-full ${statusClass}`;
+        let statusClass = 'bg-green-100 text-green-700 border-green-200';
+        let iconHtml = '<i class="fas fa-check mr-1.5 text-xs"></i>';
+        if (worstQuality === 'Tidak Lancar') {
+            statusClass = 'bg-red-100 text-red-700 border-red-200';
+            iconHtml = '<i class="fas fa-xmark mr-1.5 text-xs"></i>';
+        } else if (worstQuality === 'Cukup') {
+            statusClass = 'bg-amber-100 text-amber-700 border-amber-200';
+            iconHtml = '<i class="fas fa-minus mr-1.5 text-xs"></i>';
+        }
+        
+        statusSpan.innerHTML = iconHtml + worstQuality;
+        statusSpan.className = `status-badge inline-flex items-center px-3 py-1.5 text-xs rounded-full ${statusClass}`;
     }
-
+    
     function generateJuzOptions() {
         let options = '';
         for (let j = 1; j <= 30; j++) options += `<option value="${j}">Juz ${j}</option>`;
         return options;
     }
-
-    // AUTO LOAD DATA SAAT PILIH SANTRI - VIA AJAX
+    
+    // Auto load history when santri selected
     const pesertaSelect = document.getElementById('peserta_id');
     if (pesertaSelect) {
         pesertaSelect.addEventListener('change', function() {
@@ -1247,8 +1313,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-
-    // Fungsi Load History Data via AJAX
+    
     function loadHistoryData(pesertaId) {
         const container = document.getElementById('history-container');
         container.classList.add('loading');
@@ -1272,37 +1337,72 @@ document.addEventListener('DOMContentLoaded', function() {
             container.classList.remove('loading');
         });
     }
-
-    // Modal Edit Functions
+    
+    // Edit Modal Functions with AJAX load
     window.openEditModal = function(id) {
         document.getElementById('edit_id').value = id;
         document.getElementById('editModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
         
-        // Reset fields
+        // Reset fields and active state
         document.getElementById('edit_juz').value = '';
-        document.getElementById('edit_ketuk').value = '0';
-        document.getElementById('edit_tuntun').value = '0';
         document.getElementById('edit_catatan').value = '';
+        document.querySelectorAll('#editModal .quality-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Load data via AJAX
+        fetch('<?= $_SERVER['PHP_SELF'] ?>?action=get_edit_data&id=' + id, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('edit_juz').value = data.juz;
+                document.getElementById('edit_catatan').value = data.catatan || '';
+                const quality = data.kualitas;
+                // Set hidden fields based on quality
+                const values = getValuesFromQuality(quality);
+                document.getElementById('edit_ketuk').value = values.ketuk;
+                document.getElementById('edit_tuntun').value = values.tuntun;
+                // Highlight active button
+                document.querySelectorAll('#editModal .quality-btn').forEach(btn => {
+                    if (btn.dataset.quality === quality) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+        })
+        .catch(err => console.error(err));
     }
-
+    
     window.closeEditModal = function() {
         document.getElementById('editModal').classList.add('hidden');
         document.body.style.overflow = '';
     }
-
+    
     document.getElementById('editModal')?.addEventListener('click', function(e) {
         if (e.target === this) closeEditModal();
     });
-
-    // Handle keyboard ESC to close modals
+    
+    // Edit modal quality buttons handler
+    document.querySelectorAll('#editModal .quality-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const quality = this.dataset.quality;
+            const values = getValuesFromQuality(quality);
+            document.getElementById('edit_ketuk').value = values.ketuk;
+            document.getElementById('edit_tuntun').value = values.tuntun;
+            document.querySelectorAll('#editModal .quality-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeEditModal();
         }
     });
-
-    // Handle browser back/forward
+    
     window.addEventListener('popstate', function() {
         const urlParams = new URLSearchParams(window.location.search);
         const pesertaId = urlParams.get('peserta_id');
@@ -1317,8 +1417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>`;
         }
     });
-
-    // Auto-load jika ada peserta_id di URL
+    
     const urlParams = new URLSearchParams(window.location.search);
     const initialPesertaId = urlParams.get('peserta_id');
     if (initialPesertaId && pesertaSelect) {
