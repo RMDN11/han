@@ -1136,6 +1136,7 @@ hr.soft {
 
 <script>
 // Fungsi untuk mendapatkan nilai ketuk/tuntun berdasarkan kualitas
+// ======================= STATUS PER JUZ =======================
 function getValuesFromQuality(quality) {
     switch(quality) {
         case 'Lancar': return { ketuk: 2, tuntun: 1 };
@@ -1145,152 +1146,112 @@ function getValuesFromQuality(quality) {
     }
 }
 
-// Generate Juz Detail Forms dengan Tombol Kualitas
-document.addEventListener('DOMContentLoaded', function() {
-    const jumlahJuzSelects = document.querySelectorAll('.jumlah-juz');
-    
-    jumlahJuzSelects.forEach(select => {
-        select.addEventListener('change', function() {
-            const hari = this.dataset.hari;
-            const jumlah = parseInt(this.value);
-            const container = document.getElementById(`juz-container-${hari}`);
-            const statusCell = this.closest('tr').querySelector('.status-badge');
-            
-            if (jumlah === 0) {
-                container.innerHTML = '<span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>';
-                if (statusCell) {
-                    statusCell.innerHTML = '<i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i>Belum diisi';
-                    statusCell.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full';
-                }
-                return;
-            }
-            
-            let html = `<div class="space-y-3 max-w-lg">`;
-            for (let i = 1; i <= jumlah; i++) {
-                html += `
-                <div class="flex flex-wrap items-center gap-2 p-3 bg-gradient-to-br from-gray-50/80 to-white/80 border border-gray-200/60 rounded-xl" data-juz-index="${i}">
-                    <span class="text-[11px] font-semibold text-gray-600 min-w-[32px] bg-gray-100/80 px-2 py-1 rounded-lg">J${i}</span>
-                    <input list="juzList-${hari}-${i}" name="hari[${hari}][juz_${i}]" 
-                        class="flex-1 min-w-[70px] modern-input text-xs py-2 px-2.5" 
-                        placeholder="Juz" required>
-                    <datalist id="juzList-${hari}-${i}">
-                        ${generateJuzOptions()}
-                    </datalist>
-                    <div class="flex gap-1">
-                        <button type="button" data-quality="Lancar" class="quality-btn quality-btn-lancar text-[11px] px-2 py-1">Lancar</button>
-                        <button type="button" data-quality="Cukup" class="quality-btn quality-btn-cukup text-[11px] px-2 py-1">Cukup</button>
-                        <button type="button" data-quality="Tidak Lancar" class="quality-btn quality-btn-tidak text-[11px] px-2 py-1">Tidak</button>
-                    </div>
-                    <input type="hidden" name="hari[${hari}][ketuk_${i}]" class="ketuk-hidden" value="2">
-                    <input type="hidden" name="hari[${hari}][tuntun_${i}]" class="tuntun-hidden" value="1">
-                    <input type="text" name="hari[${hari}][catatan_${i}]" placeholder="Catatan"
-                        class="flex-1 min-w-[90px] modern-input text-xs py-2 px-2">
-                </div>`;
-            }
-            html += `</div>`;
-            container.innerHTML = html;
-            
-            // Attach event listeners to quality buttons in this container
-            attachQualityButtonListeners(container);
-            updateRowStatus(this.closest('tr'));
-        });
+function getQualityFromValues(ketuk, tuntun) {
+    let status_ketuk = (ketuk < 3) ? 'Lancar' : (ketuk == 3 ? 'Cukup' : 'Tidak Lancar');
+    let status_tuntun = (tuntun < 2) ? 'Lancar' : (tuntun == 2 ? 'Cukup' : 'Tidak Lancar');
+    if (status_ketuk === 'Tidak Lancar' || status_tuntun === 'Tidak Lancar') return 'Tidak Lancar';
+    if (status_ketuk === 'Cukup' || status_tuntun === 'Cukup') return 'Cukup';
+    return 'Lancar';
+}
+
+function updateJuzStatus(badgeElement, ketuk, tuntun) {
+    const quality = getQualityFromValues(ketuk, tuntun);
+    let badgeClass = '', icon = '';
+    if (quality === 'Lancar') {
+        badgeClass = 'bg-green-100 text-green-700 border-green-200';
+        icon = '<i class="fas fa-check mr-1 text-xs"></i>';
+    } else if (quality === 'Cukup') {
+        badgeClass = 'bg-amber-100 text-amber-700 border-amber-200';
+        icon = '<i class="fas fa-minus mr-1 text-xs"></i>';
+    } else {
+        badgeClass = 'bg-red-100 text-red-700 border-red-200';
+        icon = '<i class="fas fa-xmark mr-1 text-xs"></i>';
+    }
+    badgeElement.innerHTML = `${icon} ${quality}`;
+    badgeElement.className = `inline-flex items-center px-2 py-0.5 rounded-full text-xs border ${badgeClass}`;
+}
+
+// Generate container per juz dengan status badge
+function generateJuzRow(hari, juzKe) {
+    return `
+    <div class="flex flex-wrap items-center gap-2 p-3 bg-gradient-to-br from-gray-50/80 to-white/80 border border-gray-200/60 rounded-xl" data-juz-index="${juzKe}">
+        <span class="text-[11px] font-semibold text-gray-600 min-w-[32px] bg-gray-100/80 px-2 py-1 rounded-lg">J${juzKe}</span>
+        <input list="juzList-${hari}-${juzKe}" name="hari[${hari}][juz_${juzKe}]" 
+            class="flex-1 min-w-[70px] modern-input text-xs py-2 px-2.5" 
+            placeholder="Juz" required>
+        <datalist id="juzList-${hari}-${juzKe}">
+            ${generateJuzOptions()}
+        </datalist>
+        <div class="flex gap-1">
+            <button type="button" data-quality="Lancar" class="quality-btn quality-btn-lancar text-[11px] px-2 py-1">Lancar</button>
+            <button type="button" data-quality="Cukup" class="quality-btn quality-btn-cukup text-[11px] px-2 py-1">Cukup</button>
+            <button type="button" data-quality="Tidak Lancar" class="quality-btn quality-btn-tidak text-[11px] px-2 py-1">Tidak</button>
+        </div>
+        <span class="juz-status-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs border bg-gray-100 text-gray-500 border-gray-200">—</span>
+        <input type="hidden" name="hari[${hari}][ketuk_${juzKe}]" class="ketuk-hidden" value="2">
+        <input type="hidden" name="hari[${hari}][tuntun_${juzKe}]" class="tuntun-hidden" value="1">
+        <input type="text" name="hari[${hari}][catatan_${juzKe}]" placeholder="Catatan"
+            class="flex-1 min-w-[90px] modern-input text-xs py-2 px-2">
+    </div>`;
+}
+
+// Attach event untuk quality button
+function attachQualityHandlers(container) {
+    container.querySelectorAll('.quality-btn').forEach(btn => {
+        btn.removeEventListener('click', qualityClickHandler);
+        btn.addEventListener('click', qualityClickHandler);
     });
+}
+
+function qualityClickHandler(e) {
+    const btn = e.currentTarget;
+    const quality = btn.dataset.quality;
+    const parentDiv = btn.closest('[data-juz-index]');
+    const ketukHidden = parentDiv.querySelector('.ketuk-hidden');
+    const tuntunHidden = parentDiv.querySelector('.tuntun-hidden');
+    const statusBadge = parentDiv.querySelector('.juz-status-badge');
+    const values = getValuesFromQuality(quality);
+    ketukHidden.value = values.ketuk;
+    tuntunHidden.value = values.tuntun;
     
-    function attachQualityButtonListeners(container) {
-        container.querySelectorAll('.quality-btn').forEach(btn => {
-            btn.removeEventListener('click', qualityClickHandler);
-            btn.addEventListener('click', qualityClickHandler);
-        });
-    }
+    // Update active state pada tombol di group ini
+    parentDiv.querySelectorAll('.quality-btn').forEach(button => {
+        button.classList.remove('active');
+    });
+    btn.classList.add('active');
     
-    function qualityClickHandler(e) {
-        const btn = e.currentTarget;
-        const quality = btn.dataset.quality;
-        const parentDiv = btn.closest('[data-juz-index]');
-        const ketukHidden = parentDiv.querySelector('.ketuk-hidden');
-        const tuntunHidden = parentDiv.querySelector('.tuntun-hidden');
-        const values = getValuesFromQuality(quality);
-        ketukHidden.value = values.ketuk;
-        tuntunHidden.value = values.tuntun;
+    // Update badge status per juz
+    updateJuzStatus(statusBadge, values.ketuk, values.tuntun);
+}
+
+// Ketika jumlah juz berubah
+document.querySelectorAll('.jumlah-juz').forEach(select => {
+    select.addEventListener('change', function() {
+        const hari = this.dataset.hari;
+        const jumlah = parseInt(this.value);
+        const container = document.getElementById(`juz-container-${hari}`);
         
-        // Update active state on buttons within same juz group
-        parentDiv.querySelectorAll('.quality-btn').forEach(button => {
-            button.classList.remove('active');
-        });
-        btn.classList.add('active');
-        
-        // Update row status
-        const row = btn.closest('tr');
-        updateRowStatus(row);
-    }
-    
-    function updateRowStatus(row) {
-        const jumlahSelect = row.querySelector('.jumlah-juz');
-        const statusSpan = row.querySelector('.status-badge');
-        if (!jumlahSelect || !statusSpan) return;
-        
-        const jumlah = parseInt(jumlahSelect.value);
         if (jumlah === 0) {
-            statusSpan.innerHTML = '<i class="fas fa-circle mr-1.5 text-[8px] text-gray-400"></i>Belum diisi';
-            statusSpan.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-gray-100/80 text-gray-500 border border-gray-200/60 rounded-full';
+            container.innerHTML = '<span class="text-gray-400 text-xs italic">Pilih jumlah juz terlebih dahulu</span>';
             return;
         }
         
-        const hari = jumlahSelect.dataset.hari;
-        let worstQuality = 'Lancar';
-        let allFilled = true;
-        
+        let html = `<div class="space-y-3 max-w-lg">`;
         for (let i = 1; i <= jumlah; i++) {
-            const ketukHidden = document.querySelector(`input[name="hari[${hari}][ketuk_${i}]"]`);
-            if (!ketukHidden || ketukHidden.value === undefined) {
-                allFilled = false;
-                continue;
-            }
-            const ketuk = parseInt(ketukHidden.value);
-            const tuntunHidden = document.querySelector(`input[name="hari[${hari}][tuntun_${i}]"]`);
-            const tuntun = parseInt(tuntunHidden?.value || 0);
-            
-            let status_ketuk = 'Lancar';
-            if (ketuk == 3) status_ketuk = 'Cukup';
-            else if (ketuk > 3) status_ketuk = 'Tidak Lancar';
-            
-            let status_tuntun = 'Lancar';
-            if (tuntun == 2) status_tuntun = 'Cukup';
-            else if (tuntun > 2) status_tuntun = 'Tidak Lancar';
-            
-            let juzQuality = 'Lancar';
-            if (status_ketuk === 'Tidak Lancar' || status_tuntun === 'Tidak Lancar') juzQuality = 'Tidak Lancar';
-            else if (status_ketuk === 'Cukup' || status_tuntun === 'Cukup') juzQuality = 'Cukup';
-            
-            if (juzQuality === 'Tidak Lancar') worstQuality = 'Tidak Lancar';
-            else if (juzQuality === 'Cukup' && worstQuality !== 'Tidak Lancar') worstQuality = 'Cukup';
+            html += generateJuzRow(hari, i);
         }
+        html += `</div>`;
+        container.innerHTML = html;
         
-        if (!allFilled && jumlah > 0) {
-            statusSpan.innerHTML = '<i class="fas fa-exclamation-triangle mr-1.5 text-xs"></i>Belum lengkap';
-            statusSpan.className = 'status-badge inline-flex items-center px-3 py-1.5 text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full';
-            return;
-        }
-        
-        let statusClass = 'bg-green-100 text-green-700 border-green-200';
-        let iconHtml = '<i class="fas fa-check mr-1.5 text-xs"></i>';
-        if (worstQuality === 'Tidak Lancar') {
-            statusClass = 'bg-red-100 text-red-700 border-red-200';
-            iconHtml = '<i class="fas fa-xmark mr-1.5 text-xs"></i>';
-        } else if (worstQuality === 'Cukup') {
-            statusClass = 'bg-amber-100 text-amber-700 border-amber-200';
-            iconHtml = '<i class="fas fa-minus mr-1.5 text-xs"></i>';
-        }
-        
-        statusSpan.innerHTML = iconHtml + worstQuality;
-        statusSpan.className = `status-badge inline-flex items-center px-3 py-1.5 text-xs rounded-full ${statusClass}`;
-    }
-    
-    function generateJuzOptions() {
-        let options = '';
-        for (let j = 1; j <= 30; j++) options += `<option value="${j}">Juz ${j}</option>`;
-        return options;
-    }
+        attachQualityHandlers(container);
+    });
+});
+
+function generateJuzOptions() {
+    let opts = '';
+    for (let i = 1; i <= 30; i++) opts += `<option value="${i}">Juz ${i}</option>`;
+    return opts;
+}
     
     // Auto load history when santri selected
     const pesertaSelect = document.getElementById('peserta_id');
