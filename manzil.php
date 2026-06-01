@@ -688,35 +688,39 @@ body {
 }
 
 /* Badges */
-.badge-lancar { /* badge-success */
-    background: var(--badge-success-bg);
-    color: var(--badge-success-text);
-    border: 1px solid var(--badge-success-bg);
+/* Badge Warna Baru - Soft Minimalist */
+.badge-lancar { 
+    background-color: #ecfdf5; /* Soft Mint */
+    color: #065f46; 
+    border-color: #d1fae5; 
+}
+.badge-cukup { 
+    background-color: #fffbeb; /* Soft Cream */
+    color: #92400e; 
+    border-color: #fef3c7; 
+}
+.badge-tidak { 
+    background-color: #fef2f2; /* Soft Rose */
+    color: #991b1b; 
+    border-color: #fee2e2; 
 }
 
-.badge-cukup { /* badge-warning */
-    background: var(--badge-warning-bg);
-    color: var(--badge-warning-text);
-    border: 1px solid var(--badge-warning-bg);
-}
-
-.badge-tidak { /* badge-danger */
-    background: var(--badge-danger-bg);
-    color: var(--badge-danger-text);
-    border: 1px solid var(--badge-danger-bg);
-}
-
-/* Table Header Styles */
+/* Tabel Modern */
 .modern-table-header {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(148, 163, 184, 0.05));
-    color: #475569;
-    font-weight: 600;
-    font-size: 0.7rem;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(203, 213, 225, 0.5);
 }
-
+/* Tabel Modern */
+.modern-table-header {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
 .history-section {
     background: var(--colors-canvas-parchment); /* Parchment */
     border-bottom: 1px solid rgba(203, 213, 225, 0.3);
@@ -1308,95 +1312,60 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function generateHistoryModalContent(historyData) {
-        if (!historyData || historyData.length === 0) {
-            return `
-            <div class="text-center py-12">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                    <i class="fas fa-inbox text-gray-400 text-2xl"></i>
-                </div>
-                <p class="text-gray-500">Belum ada data murojaah minggu ini</p>
-                <p class="text-gray-400 text-xs mt-1">Silakan input data terlebih dahulu</p>
-            </div>`;
-        }
-        
-        let html = `
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="modern-table-header rounded-t-xl">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-semibold rounded-tl-xl">Hari</th>
-                        <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
-                        <th class="px-4 py-3 text-left font-semibold">Juz</th>
-                        <th class="px-4 py-3 text-center font-semibold">Jumlah Juz</th>
-                        <th class="px-4 py-3 text-center font-semibold">Total Ketuk</th>
-                        <th class="px-4 py-3 text-center font-semibold">Total Tuntun</th>
-                        <th class="px-4 py-3 text-center font-semibold">Kualitas</th>
-                        <th class="px-4 py-3 text-left font-semibold">Catatan</th>
-                        <th class="px-4 py-3 text-center font-semibold rounded-tr-xl">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100/60">`;
-        
-        historyData.forEach((data, index) => {
-            const hariPendek = data.hari.substring(0, 3);
-            const tanggalFormat = new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
-            
-            html += `
-            <tr class="hover:bg-gray-50/50 transition-colors animate-fade-in" style="animation-delay: ${index * 50}ms">
-                <td class="px-4 py-4 text-gray-700 font-medium">${hariPendek}</td>
-                <td class="px-4 py-4 text-gray-400 text-xs">${tanggalFormat}</td>
-                <td class="px-4 py-4">
-                    <span class="font-mono text-indigo-600 text-xs bg-indigo-50 px-2 py-1 rounded-lg">${data.juz_list}</span>
-                </td>
-                <td class="px-4 py-4 text-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 text-xs font-medium bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-700 rounded-full">
-                        ${data.total_juz}
-                    </span>
-                </td>
-                <td class="px-4 py-4 text-center text-emerald-600 font-semibold">${data.total_ketuk}</td>
-                <td class="px-4 py-4 text-center text-amber-600 font-semibold">${data.total_tuntun}</td>
-                <td class="px-4 py-4 text-center">
-                    <span class="inline-flex items-center px-3 py-1.5 text-[11px] border rounded-full ${data.badge_class}">
-                        <i class="fas fa-${data.icon_class} mr-1.5 text-[10px]"></i>
-                        ${data.kualitas}
-                    </span>
-                </td>
-                <td class="px-4 py-4 text-gray-400 italic text-xs max-w-[180px] truncate" title="${data.catatan}">
-                    ${data.catatan || '-'}
-                </td>
-                <td class="px-4 py-4 text-center">
-                    <div class="flex items-center justify-center gap-2">
-                        <button onclick="openEditModal(${data.sample_id})"
-                            class="w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 flex items-center justify-center transition-colors"
-                            title="Edit">
-                            <i class="fas fa-pencil-alt text-xs"></i>
-                        </button>
-                        <form method="POST" action="" class="inline" onsubmit="return confirm('Yakin ingin menghapus semua data tanggal ${data.tanggal}?')">
-                            <input type="hidden" name="delete_date" value="${data.tanggal}">
-                            <input type="hidden" name="peserta_id" value="<?= $selected_peserta_id ?>">
-                            <button type="submit" name="hapus_per_tanggal" 
-                                class="w-8 h-8 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors"
-                                title="Hapus">
-                                <i class="fas fa-trash-alt text-xs"></i>
-                            </button>
-                        </form>
-                    </div>
-                </td>
-            </tr>`;
-        });
-        
-        html += `
-                </tbody>
-            </table>
-            <p class="text-[11px] text-gray-400 mt-4 italic text-center">
-                <i class="fas fa-info-circle mr-1"></i>
-                Data digabung per tanggal. Jumlah Juz = sesi murojaah hari itu. Ketuk & Tuntun adalah total kumulatif.
-            </p>
+    if (!historyData || historyData.length === 0) {
+        return `
+        <div class="text-center py-12">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                <i class="fas fa-inbox text-gray-400 text-2xl"></i>
+            </div>
+            <p class="text-gray-500">Belum ada data murojaah minggu ini</p>
         </div>`;
-        
-        return html;
     }
-
+    
+    let html = `
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="modern-table-header">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold">Hari</th>
+                    <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
+                    <th class="px-4 py-3 text-left font-semibold">Juz</th>
+                    <th class="px-4 py-3 text-center font-semibold">Jumlah</th>
+                    <th class="px-4 py-3 text-center font-semibold">Kualitas</th>
+                    <th class="px-4 py-3 text-left font-semibold">Catatan</th>
+                    <th class="px-4 py-3 text-center font-semibold">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100/60">`;
+    
+    historyData.forEach((data, index) => {
+        html += `
+        <tr class="hover:bg-gray-50/50 transition-colors animate-fade-in" style="animation-delay: ${index * 50}ms">
+            <td class="px-4 py-4 text-gray-700 font-medium">${data.hari.substring(0, 3)}</td>
+            <td class="px-4 py-4 text-gray-400 text-xs">${new Date(data.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })}</td>
+            <td class="px-4 py-4"><span class="font-mono text-indigo-600 text-xs bg-indigo-50 px-2 py-1 rounded-lg">${data.juz_list}</span></td>
+            <td class="px-4 py-4 text-center"><span class="text-xs font-semibold text-gray-600">${data.total_juz}</span></td>
+            <td class="px-4 py-4 text-center">
+                <span class="inline-flex items-center px-3 py-1 text-[11px] border rounded-full ${data.badge_class}">
+                    ${data.kualitas}
+                </span>
+            </td>
+            <td class="px-4 py-4 text-gray-400 italic text-xs max-w-[150px] truncate">${data.catatan || '-'}</td>
+            <td class="px-4 py-4 text-center">
+                <form method="POST" action="" onsubmit="return confirm('Hapus data tanggal ${data.tanggal}?')">
+                    <input type="hidden" name="delete_date" value="${data.tanggal}">
+                    <input type="hidden" name="peserta_id" value="<?= $selected_peserta_id ?>">
+                    <button type="submit" name="hapus_per_tanggal" class="text-red-400 hover:text-red-600 transition-colors">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                </form>
+            </td>
+        </tr>`;
+    });
+    
+    html += `</tbody></table></div>`;
+    return html;
+}
     window.closeHistoryModal = function() {
         document.getElementById('historyModal').classList.add('hidden');
     };
