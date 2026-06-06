@@ -1082,6 +1082,8 @@ include 'header_content.php';
         </form>
     </div>
 </div>
+</div>
+
 
 <!-- Kelola Santri -->
 <div class="glass-card mb-7 p-5 animate-slide-up">
