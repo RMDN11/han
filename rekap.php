@@ -333,36 +333,12 @@ body {
 <body class="min-h-screen p-4 md:p-8">
 <div class="max-w-7xl mx-auto">
     <!-- Header -->
-    <div class="glass-card p-5 mb-8">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                    <i class="fas fa-clipboard-list"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">LAPORAN PEKANAN</h1>
-                    <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">PERKEMBANGAN HAFALAN SANTRI</p>
-                </div>
-            </div>
-            <div class="text-left sm:text-right">
-                <p class="text-sm font-medium text-gray-700" style="letter-spacing: -0.01em;">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
-                <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
-            </div>
-        </div>
-        <!-- Info Pengampu -->
-        <div class="mt-4 p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex flex-wrap items-center gap-4 text-sm">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-user-tie text-blue-500"></i>
-                <span class="text-gray-600">Pengampu:</span>
-                <span class="font-medium text-gray-800">Farhan Ramadhan</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <i class="fas fa-layer-group text-blue-500"></i>
-                <span class="text-gray-600">Halaqah:</span>
-                <span class="font-medium text-gray-800">1</span>
-            </div>
-        </div>
-    </div>
+    <?php
+        $header_icon = 'fa-clipboard-list';
+        $header_title = 'LAPORAN PEKANAN';
+        $header_subtitle = 'REKAPITULASI HAFALAN SANTRI';
+        include 'header_content.php';
+        ?>
 
     <!-- Alert Messages -->
     <?php if (!empty($message)): ?>
@@ -516,12 +492,7 @@ body {
     </form>
 
     <!-- Footer -->
-    <div class="mt-10 text-center pb-6">
-        <p class="text-xs text-gray-400 tracking-wide flex items-center justify-center gap-1">
-            <i class="fas fa-circle text-[5px] align-middle text-blue-400"></i>
-            Reqra by Han · <?= date('Y') ?>
-        </p>
-    </div>
+    <?php include 'footer_content.php'; ?>
 </div>
 
 <script>

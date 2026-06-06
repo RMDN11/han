@@ -394,23 +394,12 @@ for ($w = 1; $w <= 5; $w++) {
     <div class="max-w-6xl mx-auto px-4 py-8">
         
         <!-- Header - Adapted to Apple's style -->
-        <div class="glass-card p-5 mb-8">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                        <i class="fas fa-clipboard-list"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-xl md:text-2xl font-semibold text-gray-800 tracking-tight">KUALITAS MUROJA'AH</h1>
-                        <p class="text-xs text-gray-500 mt-0.5" style="letter-spacing: -0.02em;">PERKEMBANGAN HAFALAN SANTRI</p>
-                    </div>
-                </div>
-                <div class="text-left sm:text-right">
-                    <p class="text-sm font-medium text-gray-700">PROGRAM ASRAMA TAHFIZH INTENSIF</p>
-                    <p class="text-xs text-gray-400">MAHAD IMAM SYATHBY BOGOR</p>
-                </div>
-            </div>
-        </div>
+        <?php
+            $header_icon = 'fa-chart-line';
+            $header_title = "KUALITAS MUROJA'AH";
+            $header_subtitle = 'PERKEMBANGAN HAFALAN SANTRI';
+            include 'header_content.php';
+            ?>
 
         <!-- Filter Form (NO PRINT BUTTON) -->
         <div class="glass-card p-5 mb-8">
@@ -566,9 +555,7 @@ for ($w = 1; $w <= 5; $w++) {
             </div>
         <?php endif; ?>
 
-        <div class="mt-10 text-center">
-            <p class="text-xs text-gray-400">Reqra System · Monitoring Kualitas Muroja'ah <?= date('Y') ?></p>
-        </div>
+        <?php include 'footer_content.php'; ?>
     </div>
 
     <script>
