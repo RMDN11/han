@@ -21,12 +21,16 @@ $bulan_list = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
 // ==========================================
 // 2. FUNGSI HELPER - KUALITAS
 // ==========================================
-// Contoh jika nilai diambil langsung dari database
-function hitungKualitas($status) {
-    if ($status == 'Tidak Lancar') return ['status' => 'Tidak Lancar', 'class' => 'badge-danger', 'icon' => 'xmark'];
-    if ($status == 'Cukup') return ['status' => 'Cukup', 'class' => 'badge-warning', 'icon' => 'minus'];
+function hitungKualitas($ketuk, $tuntun) {
+    $s_k = ($ketuk < 3) ? 0 : (($ketuk == 3) ? 1 : 2);
+    $s_t = ($tuntun < 2) ? 0 : (($tuntun == 2) ? 1 : 2);
+    $max = max($s_k, $s_t);
+    
+    if ($max == 2) return ['status' => 'Tidak Lancar', 'class' => 'badge-danger', 'icon' => 'xmark'];
+    if ($max == 1) return ['status' => 'Cukup', 'class' => 'badge-warning', 'icon' => 'minus'];
     return ['status' => 'Lancar', 'class' => 'badge-success', 'icon' => 'check'];
 }
+
 // ==========================================
 // 3. FUNGSI: HITUNG PEKAN BERDASARKAN MINGGU PERTAMA (Sesuai Kalender)
 // ==========================================
@@ -531,7 +535,13 @@ for ($w = 1; $w <= 5; $w++) {
                                             <div class="juz-item p-3 flex items-center justify-between" style="border-radius: 11px;">
                                                 <div>
                                                     <div class="text-sm font-bold text-gray-700">Juz <?= $juz['juz'] ?></div>
-                                                    
+                                                    <div class="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                                        <span><i class="fas fa-history text-blue-400 mr-1"></i><?= $juz['freq'] ?>x</span>
+                                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                        <span><i class="fas fa-hand-pointer text-orange-400 mr-1"></i><?= $juz['avg_k'] ?></span>
+                                                        <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                                        <span><i class="fas fa-hand-holding-heart text-pink-400 mr-1"></i><?= $juz['avg_t'] ?></span>
+                                                    </div>
                                                 </div>
                                                 <span class="status-badge <?= $juz['class'] ?> text-[10px] px-2 py-1 shadow-sm">
                                                     <?= $juz['status'] ?>
@@ -548,7 +558,11 @@ for ($w = 1; $w <= 5; $w++) {
             </div>
 
             <!-- LEGENDA -->
-            
+            <div class="mt-6 flex flex-wrap gap-4 justify-center text-xs text-gray-500 glass-card p-4">
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-emerald-500"></i> Lancar (Ketuk ≤2, Tuntun ≤1)</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-amber-500"></i> Cukup (Ketuk =3, Tuntun =2)</span>
+                <span class="flex items-center gap-1.5"><i class="fas fa-circle text-red-500"></i> Tidak Lancar (Ketuk >3, Tuntun >2)</span>
+            </div>
 
         <?php else: ?>
             <div class="glass-card p-16 text-center">
