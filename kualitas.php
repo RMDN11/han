@@ -532,15 +532,7 @@ for ($w = 1; $w <= 5; $w++) {
                                 <?php else: ?>
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         <?php foreach ($w['juz_details'] as $juz): ?>
-                                            <div class="juz-item p-3 flex items-center justify-between" style="border-radius: 11px;">
-                                                <div>
-                                                    <div class="text-sm font-bold text-gray-700">Juz <?= $juz['juz'] ?></div>
-                                                    
-                                                </div>
-                                                <span class="status-badge <?= $juz['class'] ?> text-[10px] px-2 py-1 shadow-sm">
-                                                    <?= $juz['status'] ?>
-                                                </span>
-                                            </div>
+                                            
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
