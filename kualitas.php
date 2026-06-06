@@ -531,11 +531,7 @@ for ($w = 1; $w <= 5; $w++) {
                                             <div class="juz-item p-3 flex items-center justify-between" style="border-radius: 11px;">
                                                 <div>
                                                     <div class="text-sm font-bold text-gray-700">Juz <?= $juz['juz'] ?></div>
-                                                    <div class="mt-6 flex flex-wrap gap-4 justify-center text-xs text-gray-500 glass-card p-4">
-                                                    <span class="flex items-center gap-1.5"><i class="fas fa-circle text-emerald-500"></i> Lancar (Ketuk ≤2, Tuntun ≤1)</span>
-                                                    <span class="flex items-center gap-1.5"><i class="fas fa-circle text-amber-500"></i> Cukup (Ketuk =3, Tuntun =2)</span>
-                                                    <span class="flex items-center gap-1.5"><i class="fas fa-circle text-red-500"></i> Tidak Lancar (Ketuk >3, Tuntun >2)</span>
-                                                </div>
+                                                    
                                                 </div>
                                                 <span class="status-badge <?= $juz['class'] ?> text-[10px] px-2 py-1 shadow-sm">
                                                     <?= $juz['status'] ?>
