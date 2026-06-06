@@ -21,16 +21,12 @@ $bulan_list = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
 // ==========================================
 // 2. FUNGSI HELPER - KUALITAS
 // ==========================================
-function hitungKualitas($ketuk, $tuntun) {
-    $s_k = ($ketuk < 3) ? 0 : (($ketuk == 3) ? 1 : 2);
-    $s_t = ($tuntun < 2) ? 0 : (($tuntun == 2) ? 1 : 2);
-    $max = max($s_k, $s_t);
-    
-    if ($max == 2) return ['status' => 'Tidak Lancar', 'class' => 'badge-danger', 'icon' => 'xmark'];
-    if ($max == 1) return ['status' => 'Cukup', 'class' => 'badge-warning', 'icon' => 'minus'];
+// Contoh jika nilai diambil langsung dari database
+function hitungKualitas($status) {
+    if ($status == 'Tidak Lancar') return ['status' => 'Tidak Lancar', 'class' => 'badge-danger', 'icon' => 'xmark'];
+    if ($status == 'Cukup') return ['status' => 'Cukup', 'class' => 'badge-warning', 'icon' => 'minus'];
     return ['status' => 'Lancar', 'class' => 'badge-success', 'icon' => 'check'];
 }
-
 // ==========================================
 // 3. FUNGSI: HITUNG PEKAN BERDASARKAN MINGGU PERTAMA (Sesuai Kalender)
 // ==========================================
