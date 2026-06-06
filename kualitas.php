@@ -390,8 +390,8 @@ for ($w = 1; $w <= 5; $w++) {
         .animate-float { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
-<body class="min-h-screen pb-12">
-    <div class="max-w-6xl mx-auto px-4 py-8">
+<body class="min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
         
         <!-- Header - Adapted to Apple's style -->
         <?php
