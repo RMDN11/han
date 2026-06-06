@@ -1115,12 +1115,7 @@ include 'header_content.php';
     </div>
 </div>
 
-<div class="mt-10 text-center">
-    <p class="text-xs text-gray-400 tracking-wide">
-        <i class="fas fa-circle mr-1 text-[5px] align-middle text-blue-400"></i>
-        Reqra by Han · <?= date('Y') ?> · <span class="text-gray-300">|</span> Muroja'ah System
-    </p>
-</div>
+<?php include 'footer_content.php'; ?>
 </div>
 
 <script>
