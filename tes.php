@@ -944,6 +944,40 @@ include 'header_content.php';
 </div>
 <?php endif; ?>
 
+<!-- Kelola Santri -->
+<div class="glass-card mb-7 p-5 animate-slide-up">
+    <div class="flex items-center gap-2 mb-4">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+            <i class="fas fa-users text-xs"></i>
+        </div>
+        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
+            <input type="text" name="nama_baru"
+                class="flex-1 apple-input text-sm"
+                placeholder="Nama santri baru" required>
+            <button type="submit" name="tambah_peserta"
+                class="px-4 btn-apple-primary text-sm flex items-center justify-center whitespace-nowrap">
+                <i class="fas fa-plus mr-1 text-xs"></i> Tambah Santri
+            </button>
+        </form>
+        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
+            <select name="peserta_id_hapus" class="flex-1 apple-select text-sm" required>
+                <option value="">-- Pilih santri untuk dihapus --</option>
+                <?php foreach ($peserta_list as $peserta): ?>
+                <option value="<?= $peserta['id'] ?>"><?= htmlspecialchars($peserta['nama']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <button type="submit" name="hapus_peserta"
+                class="px-4 bg-red-50 text-red-700 border border-red-200 rounded-full text-sm flex items-center justify-center whitespace-nowrap hover:bg-red-100 transition-colors"
+                onclick="return confirm('Yakin ingin menghapus santri ini? Ini akan menonaktifkan santri.')">
+                <i class="fas fa-trash-alt mr-1 text-xs"></i> Hapus
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- Form Input Muroja'ah -->
 <div class="glass-card p-5 animate-slide-up" style="animation-delay: 0.1s">
     <div class="flex items-center gap-2 mb-5">
@@ -1016,40 +1050,6 @@ include 'header_content.php';
             </button>
         </div>
     </form>
-</div>
-
-<!-- Kelola Santri -->
-<div class="glass-card mb-7 p-5 animate-slide-up">
-    <div class="flex items-center gap-2 mb-4">
-        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
-            <i class="fas fa-users text-xs"></i>
-        </div>
-        <span class="text-sm font-medium text-gray-700 tracking-wide">KELOLA SANTRI</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
-            <input type="text" name="nama_baru"
-                class="flex-1 apple-input text-sm"
-                placeholder="Nama santri baru" required>
-            <button type="submit" name="tambah_peserta"
-                class="px-4 btn-apple-primary text-sm flex items-center justify-center whitespace-nowrap">
-                <i class="fas fa-plus mr-1 text-xs"></i> Tambah Santri
-            </button>
-        </form>
-        <form method="POST" action="" class="flex flex-col sm:flex-row items-stretch gap-2">
-            <select name="peserta_id_hapus" class="flex-1 apple-select text-sm" required>
-                <option value="">-- Pilih santri untuk dihapus --</option>
-                <?php foreach ($peserta_list as $peserta): ?>
-                <option value="<?= $peserta['id'] ?>"><?= htmlspecialchars($peserta['nama']) ?></option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit" name="hapus_peserta"
-                class="px-4 bg-red-50 text-red-700 border border-red-200 rounded-full text-sm flex items-center justify-center whitespace-nowrap hover:bg-red-100 transition-colors"
-                onclick="return confirm('Yakin ingin menghapus santri ini? Ini akan menonaktifkan santri.')">
-                <i class="fas fa-trash-alt mr-1 text-xs"></i> Hapus
-            </button>
-        </form>
-    </div>
 </div>
 
 <!-- Riwayat -->
