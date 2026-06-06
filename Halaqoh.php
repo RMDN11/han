@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard Guru · Reqra</title>
+    <title>Farhan Halaqoh · Reqra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -130,7 +130,7 @@
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow">
                 <i class="fas fa-chalkboard-user text-xs"></i>
             </div>
-            <div class="font-semibold text-gray-800 text-sm tracking-wide">Portal Guru</div>
+            <div class="font-semibold text-gray-800 text-sm tracking-wide">Portal Saye</div>
         </div>
         <button id="menuOpen" class="text-gray-600 hover:text-blue-600 p-2 focus:outline-none transition-colors">
             <i class="fas fa-bars text-xl"></i>
@@ -160,7 +160,7 @@
                     <i class="fas fa-chalkboard-user text-lg"></i>
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-gray-800 tracking-tight">Dashboard Guru</h2>
+                    <h2 class="text-sm font-bold text-gray-800 tracking-tight">Dashboard Farhan</h2>
                     <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Sistem Muroja'ah</p>
                 </div>
             </div>
