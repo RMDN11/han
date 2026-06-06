@@ -911,21 +911,15 @@ hr.soft {
 <div class="max-w-7xl mx-auto">
 
 <!-- Modern Header -->
-<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8" style="letter-spacing: -0.02em;">
-    <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white shadow-lg">
-            <i class="fas fa-book-quran text-lg"></i>
-        </div>
-        <div>
-            <h1 class="text-2xl font-semibold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">muroja'ah</h1>
-            <p class="text-xs text-gray-500 mt-0.5">monitoring kualitas hafalan</p>
-        </div>
-    </div>
-    <div class="text-left md:text-right">
-        <p class="text-sm font-medium text-gray-700">Minggu <?= $minggu_ini ?> · <?= $tahun_ini ?></p>
-        <p class="text-xs text-gray-400"><?= date('d M Y') ?></p>
-    </div>
-</div>
+<?php
+// Tentukan teks khusus untuk halaman ini
+$header_icon = 'fa-book-quran';
+$header_title = "INPUT MUROJA'AH";
+$header_subtitle = 'MONITORING KUALITAS HAFALAN';
+
+// Panggil file header seragam
+include 'header_content.php';
+?>
 
 <!-- Alert Messages -->
 <?php if (!empty($message)): ?>
