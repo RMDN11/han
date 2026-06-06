@@ -913,7 +913,7 @@ hr.soft {
 <!-- Modern Header -->
 <?php
 // Tentukan teks khusus untuk halaman ini
-$header_icon = 'fas fa-search input-icon';
+$header_icon = 'fas fa-pen-to-square';
 $header_title = "INPUT MUROJA'AH";
 $header_subtitle = 'MONITORING KUALITAS HAFALAN';
 
