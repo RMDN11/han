@@ -161,7 +161,7 @@
                 </div>
                 <div>
                     <h2 class="text-sm font-bold text-gray-800 tracking-tight">Dashboard Farhan</h2>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Sistem Muroja'ah</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-0.5">Halaqoh Ma'had</p>
                 </div>
             </div>
             <button id="menuClose" class="md:hidden w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-red-50 hover:text-red-500 transition-colors">
