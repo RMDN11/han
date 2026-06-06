@@ -913,7 +913,7 @@ hr.soft {
 <!-- Modern Header -->
 <?php
 // Tentukan teks khusus untuk halaman ini
-$header_icon = 'fa-book-quran';
+$header_icon = 'fas fa-search input-icon';
 $header_title = "INPUT MUROJA'AH";
 $header_subtitle = 'MONITORING KUALITAS HAFALAN';
 
