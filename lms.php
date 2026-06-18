@@ -1,8 +1,25 @@
 <?php
 /**
- * LMS - Materi Umum Manajemen Pendidikan Profesional
- * Single File PHP Application with SQLite Database
+ * LMS - Manajemen Pendidikan Profesional
+ * Single File Application - Adapted from RMDN11/han repository
+ * Database: SQLite
  */
+
+// ============================================
+// KONFIGURASI - DISESUAIKAN DENGAN REPO
+// ============================================
+$site_title = 'LMS Profesional - Han';
+$header_title = 'DASHBOARD';
+$header_subtitle = 'PERKEMBANGAN BELAJAR SANTRI';
+
+// Load display settings dari config jika ada
+$settings_file = __DIR__ . '/config/display_settings.json';
+if (file_exists($settings_file)) {
+    $settings = json_decode(file_get_contents($settings_file), true);
+    if ($settings) {
+        $header_subtitle = $settings['display_text'] ?? $header_subtitle;
+    }
+}
 
 // ============================================
 // DATABASE INITIALIZATION
@@ -70,20 +87,16 @@ $db->exec("
 // Seed default data if empty
 $userCount = $db->query("SELECT COUNT(*) FROM users")->fetchColumn();
 if ($userCount == 0) {
-    // Admin user
     $db->exec("INSERT INTO users (username, password, name, email, role) VALUES 
         ('admin', '" . password_hash('admin123', PASSWORD_DEFAULT) . "', 'Administrator', 'admin@lms.com', 'admin')");
-    // Participant user
     $db->exec("INSERT INTO users (username, password, name, email, role) VALUES 
         ('peserta', '" . password_hash('peserta123', PASSWORD_DEFAULT) . "', 'Peserta Didik', 'peserta@lms.com', 'participant')");
 
-    // Sample courses
     $db->exec("INSERT INTO courses (title, description, video_url, thumbnail) VALUES 
         ('Pengantar Manajemen Pendidikan', 'Materi dasar tentang konsep manajemen pendidikan profesional', 'https://www.youtube.com/embed/dQw4w9WgXcQ', 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'),
         ('Kepemimpinan dalam Pendidikan', 'Strategi kepemimpinan efektif di lingkungan pendidikan', 'https://www.youtube.com/embed/dQw4w9WgXcQ', 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'),
         ('Evaluasi Pembelajaran', 'Teknik evaluasi dan asesmen dalam proses pembelajaran', 'https://www.youtube.com/embed/dQw4w9WgXcQ', 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg')");
 
-    // Sample quizzes
     $db->exec("INSERT INTO quizzes (course_id, question, option_a, option_b, option_c, option_d, correct_answer) VALUES 
         (1, 'Apa yang dimaksud dengan manajemen pendidikan?', 'Proses pengelolaan sumber daya pendidikan', 'Proses pembelajaran di kelas', 'Evaluasi hasil belajar', 'Pengembangan kurikulum', 'A'),
         (1, 'Siapa yang bertanggung jawab utama dalam manajemen pendidikan?', 'Kepala Sekolah', 'Guru', 'Orang Tua', 'Siswa', 'A'),
@@ -92,7 +105,6 @@ if ($userCount == 0) {
         (3, 'Apa tujuan utama evaluasi pembelajaran?', 'Mengukur pencapaian belajar', 'Memberi nilai siswa', 'Membandingkan sekolah', 'Memenuhi administrasi', 'A'),
         (3, 'Teknik evaluasi yang melibatkan siswa dalam menilai dirinya sendiri disebut...', 'Self-assessment', 'Peer-assessment', 'Teacher-assessment', 'Portfolio', 'A')");
 
-    // Sample banners
     $db->exec("INSERT INTO banners (title, image_url, link, is_active) VALUES 
         ('Promo Pendaftaran', 'https://via.placeholder.com/1200x400/4F46E5/FFFFFF?text=Pendaftaran+Dibuka', '#', 1),
         ('Webinar Gratis', 'https://via.placeholder.com/1200x400/7C3AED/FFFFFF?text=Webinar+Manajemen+Pendidikan', '#', 1),
@@ -238,8 +250,6 @@ if (isAdmin()) {
     // Toggle banner
     if (isset($_GET['toggle_banner'])) {
         $id = (int)$_GET['toggle_banner'];
-        $banner = $db->prepare("SELECT is_active FROM banners WHERE id = ?")->execute([$id]);
-        // Fix: properly fetch
         $stmt = $db->prepare("SELECT is_active FROM banners WHERE id = ?");
         $stmt->execute([$id]);
         $banner = $stmt->fetch();
@@ -280,26 +290,6 @@ if (isParticipant()) {
         $user_id = $_SESSION['user_id'];
         $answers = $_POST['answers'] ?? [];
 
-        // Get correct answers
-        $stmt = $db->prepare("SELECT id, correct_answer FROM quizzes WHERE id = ?");
-        $stmt->execute([$quiz_id]);
-        $quiz = $stmt->fetch();
-        if (!$quiz) {
-            redirect('?page=quizzes');
-        }
-
-        // Get all questions for this quiz to count total
-        $totalStmt = $db->prepare("SELECT COUNT(*) FROM quizzes WHERE id = ?");
-        $totalStmt->execute([$quiz_id]);
-        $totalQuestions = $totalStmt->fetchColumn();
-
-        // Calculate score
-        $correctCount = 0;
-        // For a single quiz, we check the submitted answers
-        // But since we have multiple questions per quiz, we need to handle it differently
-        // Actually, each quiz entry is a single question. So we need to group by course_id
-        // Let's simplify: each quiz entry is a question, and we submit answers for all questions of a course
-
         // Get all questions for this course
         $stmt = $db->prepare("SELECT * FROM quizzes WHERE course_id = (SELECT course_id FROM quizzes WHERE id = ?)");
         $stmt->execute([$quiz_id]);
@@ -320,7 +310,6 @@ if (isParticipant()) {
         $stmt = $db->prepare("INSERT INTO grades (user_id, quiz_id, score, total_questions) VALUES (?, ?, ?, ?)");
         $stmt->execute([$user_id, $quiz_id, $score, $totalQuestions]);
 
-        // Store result in session for display
         $_SESSION['quiz_result'] = ['score' => $score, 'total' => $totalQuestions, 'correct' => $correctCount];
         redirect('?page=quiz_result');
     }
@@ -329,7 +318,6 @@ if (isParticipant()) {
 // ============================================
 // PAGE ROUTING
 // ============================================
-// Public pages
 if ($page === 'login' || $page === 'register') {
     // Show login/register page
 } elseif (!isLoggedIn()) {
@@ -403,11 +391,12 @@ function hasTakenQuiz($db, $userId, $quizId) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LMS - Manajemen Pendidikan Profesional</title>
+    <title><?= $site_title ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         /* ============================================
-           RESET & BASE
+           RESET & BASE - Clean & Modern
            ============================================ */
         * {
             margin: 0;
@@ -415,7 +404,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
             box-sizing: border-box;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
             background: #f1f5f9;
             color: #1e293b;
             line-height: 1.6;
@@ -440,28 +429,33 @@ function hasTakenQuiz($db, $userId, $quizId) {
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            background: linear-gradient(135deg, #0f172a, #1e293b);
             padding: 20px;
         }
         .auth-card {
             background: #fff;
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 40px 35px;
             max-width: 420px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
         }
-        .auth-card h2 {
+        .auth-card .logo {
             text-align: center;
-            font-size: 24px;
-            color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 20px;
         }
-        .auth-card .subtitle {
-            text-align: center;
+        .auth-card .logo h2 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .auth-card .logo h2 i {
+            color: #4F46E5;
+        }
+        .auth-card .logo p {
             color: #64748b;
             font-size: 14px;
-            margin-bottom: 25px;
+            margin-top: 2px;
         }
         .auth-card .form-group {
             margin-bottom: 18px;
@@ -476,11 +470,11 @@ function hasTakenQuiz($db, $userId, $quizId) {
         .auth-card input,
         .auth-card select {
             width: 100%;
-            padding: 12px 14px;
+            padding: 12px 16px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 15px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
             background: #f8fafc;
         }
         .auth-card input:focus,
@@ -488,6 +482,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
             outline: none;
             border-color: #4F46E5;
             background: #fff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         .auth-card .btn-primary {
             width: 100%;
@@ -495,14 +490,16 @@ function hasTakenQuiz($db, $userId, $quizId) {
             background: #4F46E5;
             color: #fff;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
         }
         .auth-card .btn-primary:hover {
             background: #4338CA;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
         }
         .auth-card .auth-link {
             text-align: center;
@@ -519,7 +516,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .alert {
             padding: 12px 16px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 18px;
             font-size: 14px;
         }
@@ -533,6 +530,15 @@ function hasTakenQuiz($db, $userId, $quizId) {
             color: #166534;
             border: 1px solid #bbf7d0;
         }
+        .demo-info {
+            margin-top: 14px;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #475569;
+            text-align: center;
+        }
 
         /* ============================================
            LAYOUT - SIDEBAR + MAIN
@@ -544,10 +550,10 @@ function hasTakenQuiz($db, $userId, $quizId) {
 
         /* SIDEBAR */
         .sidebar {
-            width: 260px;
+            width: 270px;
             background: #0f172a;
             color: #e2e8f0;
-            padding: 20px 0;
+            padding: 24px 0;
             display: flex;
             flex-direction: column;
             position: fixed;
@@ -558,51 +564,60 @@ function hasTakenQuiz($db, $userId, $quizId) {
             z-index: 100;
             transition: transform 0.3s ease;
         }
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
         .sidebar .brand {
-            padding: 0 20px 20px;
+            padding: 0 24px 20px;
             border-bottom: 1px solid #1e293b;
             margin-bottom: 16px;
         }
         .sidebar .brand h3 {
-            font-size: 18px;
+            font-size: 20px;
             color: #fff;
             display: flex;
             align-items: center;
             gap: 10px;
+            font-weight: 800;
         }
         .sidebar .brand h3 i {
             color: #818CF8;
         }
         .sidebar .brand small {
             display: block;
-            font-size: 11px;
+            font-size: 12px;
             color: #94a3b8;
             margin-top: 2px;
         }
         .sidebar .nav-section {
-            padding: 0 12px;
+            padding: 0 14px;
         }
         .sidebar .nav-section .nav-label {
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: #64748b;
-            padding: 12px 10px 6px;
+            padding: 12px 12px 6px;
             font-weight: 700;
         }
         .sidebar .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 11px 16px;
-            border-radius: 10px;
+            gap: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
             color: #cbd5e1;
             transition: all 0.2s;
-            font-size: 15px;
+            font-size: 14px;
+            font-weight: 500;
             margin-bottom: 2px;
         }
         .sidebar .nav-item i {
-            width: 20px;
+            width: 22px;
             text-align: center;
             font-size: 16px;
         }
@@ -613,7 +628,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         .sidebar .nav-item.active {
             background: #4F46E5;
             color: #fff;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
         .sidebar .nav-item.logout {
             margin-top: auto;
@@ -626,16 +641,16 @@ function hasTakenQuiz($db, $userId, $quizId) {
             color: #fca5a5;
         }
         .sidebar .user-info {
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-top: 1px solid #1e293b;
             margin-top: 8px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
         }
         .sidebar .user-info .avatar {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             background: #4F46E5;
             display: flex;
@@ -658,21 +673,22 @@ function hasTakenQuiz($db, $userId, $quizId) {
         .sidebar .user-info .user-detail .role {
             font-size: 12px;
             color: #94a3b8;
+            text-transform: capitalize;
         }
 
         /* MAIN CONTENT */
         .main-content {
-            margin-left: 260px;
+            margin-left: 270px;
             flex: 1;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* HEADER */
+        /* HEADER - Disesuaikan dengan header_content.php */
         .top-header {
             background: #fff;
-            padding: 16px 30px;
+            padding: 16px 32px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             display: flex;
             justify-content: space-between;
@@ -680,15 +696,26 @@ function hasTakenQuiz($db, $userId, $quizId) {
             position: sticky;
             top: 0;
             z-index: 50;
+            border-bottom: 1px solid #eef2f6;
         }
-        .top-header .page-title {
+        .top-header .header-left {
+            display: flex;
+            flex-direction: column;
+        }
+        .top-header .header-left .page-title {
             font-size: 20px;
-            font-weight: 700;
+            font-weight: 800;
             color: #0f172a;
         }
-        .top-header .page-title i {
+        .top-header .header-left .page-title i {
             color: #4F46E5;
             margin-right: 10px;
+        }
+        .top-header .header-left .header-subtitle {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         .top-header .header-actions {
             display: flex;
@@ -700,9 +727,10 @@ function hasTakenQuiz($db, $userId, $quizId) {
             align-items: center;
             gap: 8px;
             background: #f1f5f9;
-            padding: 6px 14px 6px 10px;
+            padding: 6px 16px 6px 12px;
             border-radius: 30px;
             font-size: 14px;
+            font-weight: 500;
         }
         .top-header .header-actions .user-badge i {
             color: #4F46E5;
@@ -714,23 +742,27 @@ function hasTakenQuiz($db, $userId, $quizId) {
             font-size: 24px;
             color: #0f172a;
             cursor: pointer;
+            padding: 4px 8px;
         }
 
         /* PAGE CONTENT */
         .page-content {
-            padding: 25px 30px;
+            padding: 28px 32px;
             flex: 1;
         }
 
-        /* FOOTER */
+        /* FOOTER - Disesuaikan dengan footer_content.php */
         .footer {
             background: #fff;
-            padding: 16px 30px;
+            padding: 16px 32px;
             text-align: center;
             font-size: 13px;
             color: #94a3b8;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #eef2f6;
             margin-top: auto;
+        }
+        .footer strong {
+            color: #475569;
         }
 
         /* ============================================
@@ -738,41 +770,50 @@ function hasTakenQuiz($db, $userId, $quizId) {
            ============================================ */
         .card {
             background: #fff;
-            border-radius: 14px;
-            padding: 20px 24px;
+            border-radius: 16px;
+            padding: 24px 28px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             border: 1px solid #eef2f6;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         .card .card-title {
             font-size: 18px;
             font-weight: 700;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .card .card-title i {
             color: #4F46E5;
-            margin-right: 8px;
+            margin-right: 10px;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
         .stat-card {
             background: #fff;
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 22px 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
             border: 1px solid #eef2f6;
             text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
         }
         .stat-card .stat-number {
-            font-size: 32px;
+            font-size: 34px;
             font-weight: 800;
             color: #0f172a;
         }
@@ -780,6 +821,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
             color: #64748b;
             font-size: 14px;
             margin-top: 4px;
+            font-weight: 500;
         }
         .stat-card .stat-icon {
             font-size: 28px;
@@ -791,8 +833,8 @@ function hasTakenQuiz($db, $userId, $quizId) {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
-            border-radius: 10px;
+            padding: 10px 22px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 600;
             border: none;
@@ -805,7 +847,8 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .btn-primary:hover {
             background: #4338CA;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
         .btn-success {
             background: #22c55e;
@@ -813,6 +856,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .btn-success:hover {
             background: #16a34a;
+            transform: translateY(-2px);
         }
         .btn-danger {
             background: #ef4444;
@@ -820,6 +864,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .btn-danger:hover {
             background: #dc2626;
+            transform: translateY(-2px);
         }
         .btn-warning {
             background: #f59e0b;
@@ -827,6 +872,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .btn-warning:hover {
             background: #d97706;
+            transform: translateY(-2px);
         }
         .btn-secondary {
             background: #e2e8f0;
@@ -834,10 +880,20 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .btn-secondary:hover {
             background: #cbd5e1;
+            transform: translateY(-2px);
         }
         .btn-sm {
-            padding: 6px 14px;
+            padding: 6px 16px;
             font-size: 13px;
+        }
+        .btn-outline {
+            background: transparent;
+            color: #4F46E5;
+            border: 2px solid #4F46E5;
+        }
+        .btn-outline:hover {
+            background: #4F46E5;
+            color: #fff;
         }
 
         .table-wrapper {
@@ -851,13 +907,13 @@ function hasTakenQuiz($db, $userId, $quizId) {
         table th {
             background: #f8fafc;
             text-align: left;
-            padding: 12px 14px;
+            padding: 12px 16px;
             font-weight: 700;
             color: #475569;
             border-bottom: 2px solid #e2e8f0;
         }
         table td {
-            padding: 12px 14px;
+            padding: 12px 16px;
             border-bottom: 1px solid #eef2f6;
             vertical-align: middle;
         }
@@ -866,7 +922,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .badge {
             display: inline-block;
-            padding: 3px 12px;
+            padding: 3px 14px;
             border-radius: 30px;
             font-size: 12px;
             font-weight: 700;
@@ -897,7 +953,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
-            border-radius: 12px;
+            border-radius: 14px;
             background: #000;
         }
         .video-container iframe {
@@ -912,13 +968,13 @@ function hasTakenQuiz($db, $userId, $quizId) {
         .banner-slider {
             position: relative;
             overflow: hidden;
-            border-radius: 14px;
-            margin-bottom: 24px;
+            border-radius: 16px;
+            margin-bottom: 28px;
             background: #0f172a;
         }
         .banner-slider .banner-track {
             display: flex;
-            transition: transform 0.5s ease;
+            transition: transform 0.6s ease;
         }
         .banner-slider .banner-slide {
             min-width: 100%;
@@ -926,7 +982,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         }
         .banner-slider .banner-slide img {
             width: 100%;
-            height: 200px;
+            height: 220px;
             object-fit: cover;
             display: block;
         }
@@ -935,27 +991,34 @@ function hasTakenQuiz($db, $userId, $quizId) {
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 20px 30px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            padding: 24px 32px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
             color: #fff;
         }
         .banner-slider .banner-slide .banner-overlay h3 {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
+        }
+        .banner-slider .banner-slide .banner-overlay a {
+            color: #818CF8;
+            font-weight: 600;
+        }
+        .banner-slider .banner-slide .banner-overlay a:hover {
+            text-decoration: underline;
         }
         .banner-slider .banner-dots {
             position: absolute;
-            bottom: 12px;
-            right: 20px;
+            bottom: 14px;
+            right: 24px;
             display: flex;
             gap: 8px;
             z-index: 5;
         }
         .banner-slider .banner-dots span {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -966,10 +1029,10 @@ function hasTakenQuiz($db, $userId, $quizId) {
 
         .quiz-option {
             display: block;
-            padding: 12px 16px;
+            padding: 14px 18px;
             margin-bottom: 8px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
             background: #fafbfc;
@@ -979,34 +1042,35 @@ function hasTakenQuiz($db, $userId, $quizId) {
             background: #f1f4ff;
         }
         .quiz-option input[type="radio"] {
-            margin-right: 12px;
+            margin-right: 14px;
             accent-color: #4F46E5;
             transform: scale(1.1);
         }
         .quiz-option.selected {
             border-color: #4F46E5;
             background: #eef2ff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
         }
         .form-group label {
             display: block;
             font-weight: 600;
             font-size: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
             color: #334155;
         }
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 16px;
             border: 2px solid #e2e8f0;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 14px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
             background: #f8fafc;
             font-family: inherit;
         }
@@ -1016,6 +1080,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
             outline: none;
             border-color: #4F46E5;
             background: #fff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
         }
         .form-group textarea {
             resize: vertical;
@@ -1024,7 +1089,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            gap: 18px;
         }
         @media (max-width: 600px) {
             .form-row {
@@ -1034,17 +1099,56 @@ function hasTakenQuiz($db, $userId, $quizId) {
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 48px 20px;
             color: #94a3b8;
         }
         .empty-state i {
-            font-size: 48px;
+            font-size: 52px;
             margin-bottom: 16px;
             color: #cbd5e1;
         }
         .empty-state h4 {
             color: #475569;
             margin-bottom: 4px;
+            font-size: 18px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+        .course-card {
+            background: #f8fafc;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #eef2f6;
+            transition: all 0.25s;
+        }
+        .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+        .course-card .course-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .course-card .course-body {
+            padding: 18px 22px 22px;
+        }
+        .course-card .course-body h4 {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .course-card .course-body p {
+            font-size: 14px;
+            color: #64748b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         /* ============================================
@@ -1053,7 +1157,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
-                width: 280px;
+                width: 290px;
             }
             .sidebar.open {
                 transform: translateX(0);
@@ -1067,6 +1171,9 @@ function hasTakenQuiz($db, $userId, $quizId) {
             .top-header .header-actions .user-badge span {
                 display: none;
             }
+            .top-header .header-left .header-subtitle {
+                font-size: 12px;
+            }
         }
 
         @media (max-width: 768px) {
@@ -1076,26 +1183,33 @@ function hasTakenQuiz($db, $userId, $quizId) {
             .top-header {
                 padding: 12px 16px;
             }
-            .top-header .page-title {
+            .top-header .header-left .page-title {
                 font-size: 17px;
             }
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
             }
             .stat-card .stat-number {
-                font-size: 24px;
+                font-size: 26px;
             }
             .card {
-                padding: 16px;
+                padding: 16px 18px;
             }
             .banner-slider .banner-slide img {
-                height: 140px;
+                height: 150px;
             }
             .banner-slider .banner-slide .banner-overlay h3 {
-                font-size: 16px;
+                font-size: 17px;
             }
             .banner-slider .banner-slide .banner-overlay {
+                padding: 14px 18px;
+            }
+            .course-grid {
+                grid-template-columns: 1fr;
+            }
+            .footer {
                 padding: 12px 16px;
+                font-size: 12px;
             }
         }
 
@@ -1115,21 +1229,37 @@ function hasTakenQuiz($db, $userId, $quizId) {
             }
             .btn {
                 font-size: 13px;
-                padding: 8px 14px;
+                padding: 8px 16px;
+            }
+            .top-header .header-left .page-title {
+                font-size: 15px;
             }
         }
 
-        /* Overlay for mobile sidebar */
+        /* Sidebar overlay */
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 99;
+            backdrop-filter: blur(4px);
         }
         .sidebar-overlay.active {
             display: block;
         }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card, .stat-card, .course-card {
+            animation: fadeInUp 0.4s ease forwards;
+        }
+        .stat-card:nth-child(2) { animation-delay: 0.05s; }
+        .stat-card:nth-child(3) { animation-delay: 0.1s; }
+        .stat-card:nth-child(4) { animation-delay: 0.15s; }
     </style>
 </head>
 <body>
@@ -1141,18 +1271,20 @@ function hasTakenQuiz($db, $userId, $quizId) {
     <div class="auth-page">
         <div class="auth-card">
             <?php if ($page === 'login'): ?>
-                <h2><i class="fas fa-graduation-cap" style="color:#4F46E5;"></i> LMS</h2>
-                <p class="subtitle">Masuk ke akun Anda</p>
+                <div class="logo">
+                    <h2><i class="fas fa-graduation-cap"></i> <?= $site_title ?></h2>
+                    <p>Masuk ke akun Anda</p>
+                </div>
                 <?php if (isset($loginError)): ?>
                     <div class="alert alert-error"><?= htmlspecialchars($loginError) ?></div>
                 <?php endif; ?>
                 <form method="POST">
                     <div class="form-group">
-                        <label>Username</label>
+                        <label><i class="fas fa-user"></i> Username</label>
                         <input type="text" name="username" required placeholder="Masukkan username">
                     </div>
                     <div class="form-group">
-                        <label>Password</label>
+                        <label><i class="fas fa-lock"></i> Password</label>
                         <input type="password" name="password" required placeholder="Masukkan password">
                     </div>
                     <button type="submit" name="login" class="btn-primary">Masuk</button>
@@ -1160,12 +1292,14 @@ function hasTakenQuiz($db, $userId, $quizId) {
                 <div class="auth-link">
                     Belum punya akun? <a href="?page=register">Daftar sekarang</a>
                 </div>
-                <div style="margin-top:12px;font-size:13px;color:#94a3b8;text-align:center;">
-                    Demo: admin / admin123 &nbsp;|&nbsp; peserta / peserta123
+                <div class="demo-info">
+                    <strong>Demo:</strong> admin / admin123 &nbsp;|&nbsp; peserta / peserta123
                 </div>
             <?php else: ?>
-                <h2><i class="fas fa-user-plus" style="color:#4F46E5;"></i> Daftar</h2>
-                <p class="subtitle">Buat akun baru</p>
+                <div class="logo">
+                    <h2><i class="fas fa-user-plus"></i> Daftar</h2>
+                    <p>Buat akun baru</p>
+                </div>
                 <?php if (isset($registerSuccess)): ?>
                     <div class="alert alert-success"><?= htmlspecialchars($registerSuccess) ?></div>
                 <?php endif; ?>
@@ -1218,8 +1352,8 @@ function hasTakenQuiz($db, $userId, $quizId) {
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
         <div class="brand">
-            <h3><i class="fas fa-graduation-cap"></i> LMS Profesional</h3>
-            <small>Manajemen Pendidikan</small>
+            <h3><i class="fas fa-graduation-cap"></i> LMS Han</h3>
+            <small>Manajemen Pendidikan Profesional</small>
         </div>
 
         <div class="nav-section">
@@ -1266,11 +1400,17 @@ function hasTakenQuiz($db, $userId, $quizId) {
     <!-- MAIN CONTENT -->
     <main class="main-content">
 
-        <!-- HEADER -->
+        <!-- HEADER - Disesuaikan dengan header_content.php -->
         <header class="top-header">
-            <div class="page-title">
-                <i class="fas fa-<?= $page === 'dashboard' ? 'th-large' : ($page === 'courses' ? 'video' : ($page === 'quizzes' ? 'question-circle' : ($page === 'grades' ? 'star' : ($page === 'banners' ? 'image' : ($page === 'users' ? 'users' : ($page === 'all_grades' ? 'chart-bar' : 'book')))))) ?>"></i>
-                <?= ucfirst(str_replace('_', ' ', $page)) ?>
+            <div class="header-left">
+                <div class="page-title">
+                    <i class="fas fa-<?= $page === 'dashboard' ? 'th-large' : ($page === 'courses' ? 'video' : ($page === 'quizzes' ? 'question-circle' : ($page === 'grades' ? 'star' : ($page === 'banners' ? 'image' : ($page === 'users' ? 'users' : ($page === 'all_grades' ? 'chart-bar' : 'book')))))) ?>"></i>
+                    <?= strtoupper(str_replace('_', ' ', $page)) ?>
+                </div>
+                <div class="header-subtitle">
+                    <i class="fas fa-chevron-right" style="font-size:10px;color:#94a3b8;"></i>
+                    <?= $header_subtitle ?>
+                </div>
             </div>
             <div class="header-actions">
                 <div class="user-badge">
@@ -1326,7 +1466,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
                                         <div class="banner-overlay">
                                             <h3><?= htmlspecialchars($b['title']) ?></h3>
                                             <?php if ($b['link'] && $b['link'] !== '#'): ?>
-                                                <a href="<?= htmlspecialchars($b['link']) ?>" target="_blank" style="color:#fff;text-decoration:underline;">Lihat Detail →</a>
+                                                <a href="<?= htmlspecialchars($b['link']) ?>" target="_blank">Lihat Detail →</a>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -1373,14 +1513,14 @@ function hasTakenQuiz($db, $userId, $quizId) {
                         <?php
                         $recentCourses = $db->query("SELECT * FROM courses ORDER BY created_at DESC LIMIT 3")->fetchAll();
                         if (count($recentCourses) > 0): ?>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                            <div class="course-grid">
                                 <?php foreach ($recentCourses as $c): ?>
-                                    <div style="background:#f8fafc;border-radius:12px;overflow:hidden;border:1px solid #eef2f6;">
-                                        <img src="<?= htmlspecialchars($c['thumbnail'] ?: 'https://via.placeholder.com/400x225/4F46E5/FFFFFF?text=' . urlencode($c['title'])) ?>" alt="<?= htmlspecialchars($c['title']) ?>" style="width:100%;height:140px;object-fit:cover;">
-                                        <div style="padding:12px 16px;">
-                                            <h4 style="font-size:15px;font-weight:700;"><?= htmlspecialchars($c['title']) ?></h4>
-                                            <p style="font-size:13px;color:#64748b;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;"><?= htmlspecialchars($c['description']) ?></p>
-                                            <a href="?page=courses" class="btn btn-primary btn-sm" style="margin-top:8px;">Tonton</a>
+                                    <div class="course-card">
+                                        <img src="<?= htmlspecialchars($c['thumbnail'] ?: 'https://via.placeholder.com/400x225/4F46E5/FFFFFF?text=' . urlencode($c['title'])) ?>" alt="<?= htmlspecialchars($c['title']) ?>" class="course-thumb">
+                                        <div class="course-body">
+                                            <h4><?= htmlspecialchars($c['title']) ?></h4>
+                                            <p><?= htmlspecialchars($c['description']) ?></p>
+                                            <a href="?page=courses" class="btn btn-primary btn-sm" style="margin-top:10px;">Tonton</a>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -1421,7 +1561,6 @@ function hasTakenQuiz($db, $userId, $quizId) {
                 case 'courses':
                     $courses = getCourses($db);
                     if (isAdmin()):
-                        // Show add course form
                         ?>
                         <div class="card">
                             <div class="card-title"><span><i class="fas fa-plus-circle"></i> Tambah Materi Video</span></div>
@@ -1442,15 +1581,15 @@ function hasTakenQuiz($db, $userId, $quizId) {
                     <div class="card">
                         <div class="card-title"><span><i class="fas fa-list"></i> Daftar Materi</span></div>
                         <?php if (count($courses) > 0): ?>
-                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+                            <div class="course-grid">
                                 <?php foreach ($courses as $c): ?>
-                                    <div style="background:#f8fafc;border-radius:14px;overflow:hidden;border:1px solid #eef2f6;transition:box-shadow 0.2s;" onmouseenter="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)'" onmouseleave="this.style.boxShadow='none'">
-                                        <div class="video-container" style="padding-bottom:56.25%;height:0;border-radius:12px 12px 0 0;">
+                                    <div class="course-card">
+                                        <div class="video-container" style="border-radius:14px 14px 0 0;">
                                             <iframe src="<?= htmlspecialchars($c['video_url'] ?: 'https://www.youtube.com/embed/dQw4w9WgXcQ') ?>" allowfullscreen loading="lazy"></iframe>
                                         </div>
-                                        <div style="padding:16px 20px;">
-                                            <h4 style="font-size:17px;font-weight:700;"><?= htmlspecialchars($c['title']) ?></h4>
-                                            <p style="font-size:14px;color:#64748b;margin:6px 0;"><?= htmlspecialchars($c['description']) ?></p>
+                                        <div class="course-body">
+                                            <h4><?= htmlspecialchars($c['title']) ?></h4>
+                                            <p><?= htmlspecialchars($c['description']) ?></p>
                                             <?php if (isAdmin()): ?>
                                                 <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
                                                     <a href="?delete_course=<?= $c['id'] ?>" class="btn btn-danger btn-sm" onclick="return confirm('Hapus materi ini?')"><i class="fas fa-trash"></i> Hapus</a>
@@ -1511,7 +1650,6 @@ function hasTakenQuiz($db, $userId, $quizId) {
                         if (isAdmin()) {
                             $quizzes = getQuizzes($db);
                         } else {
-                            // For participant: show quizzes grouped by course
                             $courses = getCourses($db);
                         }
                         ?>
@@ -1536,26 +1674,25 @@ function hasTakenQuiz($db, $userId, $quizId) {
                                 <div class="empty-state"><i class="fas fa-question-circle"></i><h4>Belum ada pertanyaan</h4></div>
                             <?php endif; ?>
                         <?php else: ?>
-                            <!-- Participant view: list courses with quiz -->
                             <?php if (count($courses) > 0): ?>
-                                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+                                <div class="course-grid">
                                     <?php foreach ($courses as $c): ?>
                                         <?php
                                         $questions = getQuizQuestions($db, $c['id']);
                                         $hasTaken = hasTakenQuiz($db, $_SESSION['user_id'], $questions[0]['id'] ?? 0);
                                         $grade = getUserGradeForQuiz($db, $_SESSION['user_id'], $questions[0]['id'] ?? 0);
                                         ?>
-                                        <div style="background:#f8fafc;border-radius:14px;padding:18px 20px;border:1px solid #eef2f6;">
-                                            <h4 style="font-size:16px;font-weight:700;"><?= htmlspecialchars($c['title']) ?></h4>
-                                            <p style="font-size:13px;color:#64748b;"><?= count($questions) ?> pertanyaan</p>
+                                        <div class="course-card" style="background:#f8fafc;padding:20px;">
+                                            <h4 style="font-size:17px;font-weight:700;"><?= htmlspecialchars($c['title']) ?></h4>
+                                            <p style="font-size:14px;color:#64748b;"><?= count($questions) ?> pertanyaan</p>
                                             <?php if (count($questions) > 0): ?>
                                                 <?php if ($hasTaken): ?>
-                                                    <div style="margin-top:10px;">
+                                                    <div style="margin-top:12px;">
                                                         <span class="badge badge-score">Nilai: <?= $grade['score'] ?? 0 ?>%</span>
                                                         <a href="?page=quiz_result" class="btn btn-secondary btn-sm" style="margin-left:8px;">Lihat</a>
                                                     </div>
                                                 <?php else: ?>
-                                                    <a href="?page=take_quiz&course_id=<?= $c['id'] ?>" class="btn btn-primary btn-sm" style="margin-top:10px;">Kerjakan Kuis</a>
+                                                    <a href="?page=take_quiz&course_id=<?= $c['id'] ?>" class="btn btn-primary btn-sm" style="margin-top:12px;">Kerjakan Kuis</a>
                                                 <?php endif; ?>
                                             <?php else: ?>
                                                 <p style="font-size:13px;color:#94a3b8;margin-top:8px;">Belum ada pertanyaan</p>
@@ -1582,7 +1719,6 @@ function hasTakenQuiz($db, $userId, $quizId) {
                     if (!$course || count($questions) == 0) {
                         redirect('?page=quizzes');
                     }
-                    // Check if already taken
                     if (hasTakenQuiz($db, $_SESSION['user_id'], $questions[0]['id'])) {
                         redirect('?page=quiz_result');
                     }
@@ -1595,8 +1731,8 @@ function hasTakenQuiz($db, $userId, $quizId) {
                         <form method="POST" onsubmit="return confirm('Yakin ingin mengirim jawaban?')">
                             <input type="hidden" name="quiz_id" value="<?= $questions[0]['id'] ?>">
                             <?php foreach ($questions as $idx => $q): ?>
-                                <div style="background:#f8fafc;border-radius:12px;padding:16px 20px;margin-bottom:16px;border:1px solid #eef2f6;">
-                                    <p style="font-weight:700;font-size:15px;margin-bottom:12px;"><?= ($idx + 1) ?>. <?= htmlspecialchars($q['question']) ?></p>
+                                <div style="background:#f8fafc;border-radius:14px;padding:18px 22px;margin-bottom:16px;border:1px solid #eef2f6;">
+                                    <p style="font-weight:700;font-size:15px;margin-bottom:14px;"><?= ($idx + 1) ?>. <?= htmlspecialchars($q['question']) ?></p>
                                     <div class="quiz-option" onclick="selectOption(this)">
                                         <input type="radio" name="answers[<?= $q['id'] ?>]" value="A" id="q<?= $q['id'] ?>_a">
                                         <label for="q<?= $q['id'] ?>_a" style="cursor:pointer;">A. <?= htmlspecialchars($q['option_a']) ?></label>
@@ -1632,7 +1768,6 @@ function hasTakenQuiz($db, $userId, $quizId) {
                         $correct = $result['correct'];
                         unset($_SESSION['quiz_result']);
                     } else {
-                        // Get latest grade
                         $stmt = $db->prepare("SELECT * FROM grades WHERE user_id = ? ORDER BY completed_at DESC LIMIT 1");
                         $stmt->execute([$_SESSION['user_id']]);
                         $g = $stmt->fetch();
@@ -1645,21 +1780,21 @@ function hasTakenQuiz($db, $userId, $quizId) {
                         }
                     }
                     ?>
-                    <div class="card" style="text-align:center;padding:40px;">
-                        <div style="font-size:72px;margin-bottom:16px;">
+                    <div class="card" style="text-align:center;padding:48px 32px;">
+                        <div style="font-size:80px;margin-bottom:16px;">
                             <?php if ($score >= 80): ?>🎉
                             <?php elseif ($score >= 60): ?>😊
                             <?php else: ?>📚
                             <?php endif; ?>
                         </div>
-                        <h2 style="font-size:28px;font-weight:800;">Nilai Anda: <?= $score ?>%</h2>
+                        <h2 style="font-size:30px;font-weight:800;">Nilai Anda: <?= $score ?>%</h2>
                         <p style="color:#64748b;font-size:16px;margin:8px 0;">
                             Benar <?= $correct ?> dari <?= $total ?> pertanyaan
                         </p>
-                        <div style="width:100%;max-width:300px;height:12px;background:#e2e8f0;border-radius:30px;margin:16px auto;overflow:hidden;">
+                        <div style="width:100%;max-width:320px;height:12px;background:#e2e8f0;border-radius:30px;margin:20px auto;overflow:hidden;">
                             <div style="width:<?= $score ?>%;height:100%;background:<?= $score >= 80 ? '#22c55e' : ($score >= 60 ? '#f59e0b' : '#ef4444') ?>;border-radius:30px;transition:width 0.8s ease;"></div>
                         </div>
-                        <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                        <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
                             <a href="?page=quizzes" class="btn btn-primary">Kembali ke Kuis</a>
                             <a href="?page=grades" class="btn btn-secondary">Lihat Semua Nilai</a>
                         </div>
@@ -1760,7 +1895,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
                                 <div class="form-row">
                                     <div class="form-group"><label>Link (opsional)</label><input type="url" name="link" placeholder="https://..."></div>
                                     <div class="form-group" style="display:flex;align-items:center;gap:12px;padding-top:24px;">
-                                        <label style="margin:0;"><input type="checkbox" name="is_active" checked> Aktif</label>
+                                        <label style="margin:0;font-weight:400;"><input type="checkbox" name="is_active" checked> Aktif</label>
                                     </div>
                                 </div>
                                 <button type="submit" name="add_banner" class="btn btn-primary">Simpan</button>
@@ -1777,7 +1912,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
                                         <tbody>
                                             <?php foreach ($banners as $b): ?>
                                                 <tr>
-                                                    <td><img src="<?= htmlspecialchars($b['image_url'] ?: 'https://via.placeholder.com/100x60/4F46E5/FFFFFF?text=' . urlencode($b['title'])) ?>" style="width:80px;height:50px;object-fit:cover;border-radius:8px;" alt=""></td>
+                                                    <td><img src="<?= htmlspecialchars($b['image_url'] ?: 'https://via.placeholder.com/100x60/4F46E5/FFFFFF?text=' . urlencode($b['title'])) ?>" style="width:80px;height:50px;object-fit:cover;border-radius:10px;" alt=""></td>
                                                     <td><?= htmlspecialchars($b['title']) ?></td>
                                                     <td><span class="badge <?= $b['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $b['is_active'] ? 'Aktif' : 'Nonaktif' ?></span></td>
                                                     <td>
@@ -1823,7 +1958,7 @@ function hasTakenQuiz($db, $userId, $quizId) {
                                                         <?php if ($u['id'] != $_SESSION['user_id']): ?>
                                                             <form method="POST" style="display:inline;">
                                                                 <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                                                <select name="role" onchange="this.form.submit()" style="padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;font-size:13px;">
+                                                                <select name="role" onchange="this.form.submit()" style="padding:4px 10px;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;background:#fff;">
                                                                     <option value="participant" <?= $u['role'] === 'participant' ? 'selected' : '' ?>>Participant</option>
                                                                     <option value="admin" <?= $u['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
                                                                 </select>
@@ -1849,9 +1984,11 @@ function hasTakenQuiz($db, $userId, $quizId) {
 
         </div><!-- /page-content -->
 
-        <!-- FOOTER -->
+        <!-- FOOTER - Disesuaikan dengan footer_content.php -->
         <footer class="footer">
-            &copy; <?= date('Y') ?> LMS Manajemen Pendidikan Profesional. Dibangun dengan <i class="fas fa-heart" style="color:#ef4444;"></i> untuk pendidikan.
+            Reqra by <strong>Han</strong> · <?= date('Y') ?> ·
+            <i class="fas fa-graduation-cap" style="color:#4F46E5;"></i>
+            LMS Manajemen Pendidikan Profesional
         </footer>
 
     </main>
@@ -1906,12 +2043,10 @@ JAVASCRIPT
         }
     }
 
-    // Pause on hover
     const slider = document.getElementById('bannerSlider');
     if (slider) {
         slider.addEventListener('mouseenter', () => clearInterval(autoSlideInterval));
         slider.addEventListener('mouseleave', startAutoSlide);
-        // Initialize dots click
         dots.forEach((dot, i) => {
             dot.addEventListener('click', () => {
                 clearInterval(autoSlideInterval);
@@ -1927,14 +2062,12 @@ JAVASCRIPT
         const radio = el.querySelector('input[type="radio"]');
         if (radio) {
             radio.checked = true;
-            // Remove selected class from siblings
             const parent = el.parentElement;
             parent.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
             el.classList.add('selected');
         }
     }
 
-    // Auto-select on load for radio clicks
     document.querySelectorAll('.quiz-option input[type="radio"]').forEach(input => {
         input.addEventListener('change', function() {
             const parent = this.closest('.quiz-option');
@@ -1944,18 +2077,19 @@ JAVASCRIPT
                 parent.classList.add('selected');
             }
         });
-        // If already checked on load
         if (input.checked) {
             const parent = input.closest('.quiz-option');
             if (parent) parent.classList.add('selected');
         }
     });
 
-    // Auto-dismiss alerts after 5 seconds
+    // Auto-dismiss alerts
     document.querySelectorAll('.alert').forEach(el => {
-        setTimeout(() => { el.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.5s';
             el.style.opacity = '0';
-            setTimeout(() => el.remove(), 500); }, 5000);
+            setTimeout(() => el.remove(), 500);
+        }, 5000);
     });
 </script>
 
